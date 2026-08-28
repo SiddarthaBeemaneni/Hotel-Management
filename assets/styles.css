@@ -354,13 +354,15 @@ img,svg{display:block; max-width:100%;}
   overflow: hidden;
 }
 
-/* Luminous Palace Moon */
+/* Luminous Palace Moon (Positioned directly at the top of the Palace) */
 .palace-moon {
   position: absolute;
-  top: 14px;
-  right: 11%;
-  width: 74px;
-  height: 74px;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  right: auto;
+  width: 78px;
+  height: 78px;
   border-radius: 50%;
   z-index: 2;
 }
@@ -409,10 +411,12 @@ img,svg{display:block; max-width:100%;}
 
 @media (max-width: 768px) {
   .palace-moon {
-    top: 8px;
-    right: 6%;
-    width: 52px;
-    height: 52px;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    right: auto;
+    width: 56px;
+    height: 56px;
   }
 }
 
