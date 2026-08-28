@@ -337,40 +337,32 @@
       const data = await resp.json();
       if (data.success && data.data) {
         createdBooking = data.data;
+        // Save to local bookings list
+        const existingBookings = JSON.parse(localStorage.getItem('sp_user_bookings') || '[]');
+        existingBookings.unshift(createdBooking);
+        localStorage.setItem('sp_user_bookings', JSON.stringify(existingBookings));
+
+        // Redirect to customer dashboard
+        window.location.href = `customer-dashboard.html?booked=1&code=${createdBooking.booking_code}`;
+        return;
+      } else {
+        submitBtn.disabled = false;
+        submitBtn.querySelector('span').textContent = 'Confirm Reservation';
+        
+        if (data.code === 'NOT_REGISTERED') {
+          alert('⚠️ Access Required: You must have a registered account to book a room at Siddartha Palace. Please register or log in first.');
+          window.location.href = `login.html?email=${encodeURIComponent(email)}`;
+          return;
+        } else {
+          alert('Booking failed: ' + (data.error || 'Please check your information and try again.'));
+          return;
+        }
       }
     } catch (err) {
-      console.warn('Booking API error, saving to local fallback:', err);
+      submitBtn.disabled = false;
+      submitBtn.querySelector('span').textContent = 'Confirm Reservation';
+      alert('Could not connect to reservation server. Please ensure server is running.');
     }
-
-    if (!createdBooking) {
-      const bookingCode = 'SP' + Math.floor(100000 + Math.random() * 900000);
-      createdBooking = {
-        booking_code: bookingCode,
-        customer_name: guest,
-        customer_email: email,
-        phone_number: phone,
-        room_type: room,
-        room_number: '10' + Math.floor(1 + Math.random() * 8),
-        check_in_date: checkin,
-        check_out_date: checkout,
-        nights,
-        guests_count: guestsCount,
-        special_requests: requests,
-        total_amount: total,
-        payment_method: pay,
-        payment_status: 'completed',
-        booking_status: 'upcoming',
-        created_at: new Date().toISOString()
-      };
-    }
-
-    // Save to local bookings list
-    const existingBookings = JSON.parse(localStorage.getItem('sp_user_bookings') || '[]');
-    existingBookings.unshift(createdBooking);
-    localStorage.setItem('sp_user_bookings', JSON.stringify(existingBookings));
-
-    // Redirect to customer dashboard
-    window.location.href = `customer-dashboard.html?booked=1&code=${createdBooking.booking_code}`;
   });
 </script>
 </body>

@@ -44,9 +44,20 @@ function createPool() {
 pool = createPool();
 
 /**
- * Execute a query with automatic retries on transient connection drops
+ * Execute a query with fast failover to persistent storage
  */
-async function executeWithRetry(sql, params = [], maxRetries = 2) {
+async function executeWithRetry(sql, params = [], maxRetries = 1) {
+  if (!isConnected && pool) {
+    try {
+      const [rows, fields] = await pool.execute(sql, params);
+      isConnected = true;
+      return [rows, fields];
+    } catch (err) {
+      isConnected = false;
+      throw err;
+    }
+  }
+
   let attempt = 0;
   while (attempt <= maxRetries) {
     try {
@@ -56,15 +67,9 @@ async function executeWithRetry(sql, params = [], maxRetries = 2) {
       return [rows, fields];
     } catch (err) {
       attempt++;
-      const isTransient = [
-        'ECONNREFUSED', 'PROTOCOL_CONNECTION_LOST', 'ETIMEDOUT',
-        'ER_CON_COUNT_ERROR', 'EHOSTUNREACH', 'ENETUNREACH'
-      ].some(code => (err.code && err.code.includes(code)) || (err.message && err.message.includes(code)));
-
-      if (isTransient && attempt <= maxRetries) {
-        const delay = Math.min(1000 * Math.pow(2, attempt), 3000);
-        console.warn(`  ⚠️ [DB Transient Error] Retrying query (attempt ${attempt}/${maxRetries}) in ${delay}ms:`, err.message);
-        await new Promise(res => setTimeout(res, delay));
+      isConnected = false;
+      if (attempt <= maxRetries) {
+        await new Promise(res => setTimeout(res, 100));
         continue;
       }
       throw err;

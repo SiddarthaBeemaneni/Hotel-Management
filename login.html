@@ -323,17 +323,18 @@
       const data = await resp.json();
       if (data.success && data.user) {
         localStorage.setItem('sp_user', JSON.stringify(data.user));
+        document.getElementById('googleModal').style.display = 'none';
         window.location.href = 'index.html';
+        return;
+      } else {
+        document.getElementById('googleModal').style.display = 'none';
+        switchToRegister(email);
+        alert('This Google account is not registered. Please complete your registration below to create your account.');
         return;
       }
     } catch (err) {
-      console.warn('Backend offline, saving locally:', err);
+      alert('Could not connect to authentication service. Please ensure the server is running.');
     }
-
-    // Fallback local save
-    const user = { full_name, email, loyalty_tier: 'Bronze', role: 'customer' };
-    localStorage.setItem('sp_user', JSON.stringify(user));
-    window.location.href = 'index.html';
   });
 
   function switchToRegister(email) {

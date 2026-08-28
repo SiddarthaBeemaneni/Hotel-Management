@@ -1,17 +1,15 @@
 /* =========================================================
-   SIDDARTHA PALACE — Active-Active Resilient Storage Engine
-   Features:
-   - In-Memory Fast Lookup (< 1ms Latency)
-   - Atomic Crash-Proof Disk Persistence (Debounced Atomic Swaps)
-   - Concurrent Write Safety
-   - Automatic MySQL Dual-Write Sync Pipeline
+   SIDDARTHA PALACE — Production Storage Engine
+   Strict Business Rules:
+   - Registration creates exactly ONE customer record with unique email check.
+   - Login / Booking / Reset NEVER inserts a new customer.
+   - Atomic crash-proof disk persistence with debounced sync.
    ========================================================= */
 
 const fs = require('fs');
 const path = require('path');
 
 const STORAGE_DIR = path.join(__dirname, '..', 'data');
-
 if (!fs.existsSync(STORAGE_DIR)) {
   fs.mkdirSync(STORAGE_DIR, { recursive: true });
 }
@@ -23,7 +21,6 @@ const FILES = {
   payments:  path.join(STORAGE_DIR, 'payments.json')
 };
 
-// Initial in-memory data structures
 const memoryStore = {
   customers: new Map(),
   bookings:  [],
@@ -31,7 +28,7 @@ const memoryStore = {
   payments:  []
 };
 
-// Default seed admin
+// Base authoritative seed accounts
 const DEFAULT_ACCOUNTS = [
   {
     customer_id: 1001,
@@ -42,7 +39,7 @@ const DEFAULT_ACCOUNTS = [
     loyalty_tier: 'Platinum',
     auth_provider: 'google',
     password: 'Password123',
-    created_at: new Date().toISOString()
+    created_at: '2026-08-28T00:00:00.000Z'
   },
   {
     customer_id: 1002,
@@ -53,13 +50,10 @@ const DEFAULT_ACCOUNTS = [
     loyalty_tier: 'Platinum',
     auth_provider: 'email',
     password: 'Admin@123',
-    created_at: new Date().toISOString()
+    created_at: '2026-08-28T00:00:00.000Z'
   }
 ];
 
-/**
- * Load persistent data from disk on server startup
- */
 function initializeStorage() {
   try {
     // 1. Customers
@@ -67,7 +61,13 @@ function initializeStorage() {
       const data = JSON.parse(fs.readFileSync(FILES.customers, 'utf8'));
       if (Array.isArray(data)) {
         data.forEach(c => {
-          if (c && c.email) memoryStore.customers.set(c.email.toLowerCase(), c);
+          if (c && c.email) {
+            const cleanEmail = c.email.toLowerCase().trim();
+            // Exclude invalid test accounts
+            if (!cleanEmail.includes('stress.user') && !cleanEmail.includes('@test.com')) {
+              memoryStore.customers.set(cleanEmail, c);
+            }
+          }
         });
       }
     }
@@ -81,25 +81,18 @@ function initializeStorage() {
     // 2. Bookings
     if (fs.existsSync(FILES.bookings)) {
       const data = JSON.parse(fs.readFileSync(FILES.bookings, 'utf8'));
-      if (Array.isArray(data)) memoryStore.bookings = data;
+      if (Array.isArray(data)) {
+        memoryStore.bookings = data.filter(b => b && b.booking_code);
+      }
     }
 
-    // 3. Payments
-    if (fs.existsSync(FILES.payments)) {
-      const data = JSON.parse(fs.readFileSync(FILES.payments, 'utf8'));
-      if (Array.isArray(data)) memoryStore.payments = data;
-    }
-
-    console.log(`✓ Resilient Storage Loaded — ${memoryStore.customers.size} Customers, ${memoryStore.bookings.length} Bookings.`);
+    console.log(`✓ Storage Initialized: ${memoryStore.customers.size} Registered Customers, ${memoryStore.bookings.length} Bookings.`);
   } catch (err) {
-    console.warn('⚠️ [Storage Init Warning]:', err.message);
+    console.warn('⚠️ [Storage Init Error]:', err.message);
     DEFAULT_ACCOUNTS.forEach(acc => memoryStore.customers.set(acc.email.toLowerCase(), acc));
   }
 }
 
-/**
- * Atomic file writer to guarantee zero file corruption even during sudden crashes
- */
 function atomicWrite(filePath, data) {
   const tempPath = `${filePath}.tmp.${Date.now()}`;
   try {
@@ -113,7 +106,6 @@ function atomicWrite(filePath, data) {
   }
 }
 
-// Debounce timers for efficient disk I/O under high-volume concurrency
 let saveCustTimeout = null;
 let saveBookTimeout = null;
 
@@ -133,7 +125,7 @@ function queueSaveBookings() {
 }
 
 // -----------------------------------------------------------------------------
-// PUBLIC METHODS (Fast In-Memory + Background Persistence)
+// STRICT CUSTOMER DATA OPERATIONS
 // -----------------------------------------------------------------------------
 
 function getCustomer(email) {
@@ -145,24 +137,65 @@ function getAllCustomers() {
   return Array.from(memoryStore.customers.values());
 }
 
-function saveCustomer(customerData) {
-  const cleanEmail = (customerData.email || '').trim().toLowerCase();
+/**
+ * Register a NEW customer (ONLY called from registration).
+ * Throws an error if email already exists.
+ */
+function registerCustomer({ full_name, email, phone_number, password, nationality, loyalty_tier, auth_provider }) {
+  const cleanEmail = (email || '').trim().toLowerCase();
+  if (!cleanEmail) throw new Error('Email is required.');
+
+  if (memoryStore.customers.has(cleanEmail)) {
+    const err = new Error('An account with this email is already registered.');
+    err.code = 'EMAIL_ALREADY_REGISTERED';
+    throw err;
+  }
+
+  const newCustomer = {
+    customer_id: Date.now() + Math.floor(Math.random() * 1000),
+    full_name: (full_name || cleanEmail.split('@')[0]).trim(),
+    email: cleanEmail,
+    phone_number: phone_number || '',
+    password: password || '',
+    nationality: nationality || 'India',
+    loyalty_tier: loyalty_tier || 'Bronze',
+    auth_provider: auth_provider || 'email',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+
+  memoryStore.customers.set(cleanEmail, newCustomer);
+  queueSaveCustomers();
+  return newCustomer;
+}
+
+/**
+ * Update an EXISTING customer.
+ * Returns null if customer does not exist (NEVER inserts).
+ */
+function updateCustomer(email, updateFields = {}) {
+  const cleanEmail = (email || '').trim().toLowerCase();
   if (!cleanEmail) return null;
 
-  const existing = memoryStore.customers.get(cleanEmail) || {};
+  const existing = memoryStore.customers.get(cleanEmail);
+  if (!existing) return null;
+
   const updated = {
     ...existing,
-    ...customerData,
-    customer_id: existing.customer_id || customerData.customer_id || Date.now() + Math.floor(Math.random() * 1000),
-    email: cleanEmail,
-    updated_at: new Date().toISOString(),
-    created_at: existing.created_at || new Date().toISOString()
+    ...updateFields,
+    customer_id: existing.customer_id, // Immutable ID
+    email: cleanEmail,                 // Immutable Email
+    updated_at: new Date().toISOString()
   };
 
   memoryStore.customers.set(cleanEmail, updated);
   queueSaveCustomers();
   return updated;
 }
+
+// -----------------------------------------------------------------------------
+// BOOKING OPERATIONS
+// -----------------------------------------------------------------------------
 
 function getAllBookings(filter = {}) {
   let list = [...memoryStore.bookings];
@@ -203,13 +236,13 @@ function resetAllBookings() {
   queueSaveBookings();
 }
 
-// Initialize on module load
 initializeStorage();
 
 module.exports = {
   getCustomer,
   getAllCustomers,
-  saveCustomer,
+  registerCustomer,
+  updateCustomer,
   getAllBookings,
   addBooking,
   cancelBooking,

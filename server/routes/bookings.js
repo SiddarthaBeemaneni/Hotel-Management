@@ -1,11 +1,9 @@
 /* =========================================================
    BOOKINGS API — /api/bookings
-   Enterprise High-Concurrency Reservation Engine
-   Features:
-   - Zero-Downtime Dual-Tier Persistence (Disk + Memory + MySQL)
-   - Race-Condition Protected Room Allocation
-   - Instant Sub-5ms Booking Confirmations
-   - Non-Blocking Background Email & SMS Notifications
+   Strict Business Rules:
+   - Only registered users can create bookings.
+   - Bookings API NEVER creates or registers customer records.
+   - Price calculation and validation is strictly handled on backend.
    ========================================================= */
 
 const express = require('express');
@@ -14,8 +12,18 @@ const { pool, executeWithRetry } = require('../db');
 const authRouter = require('./auth');
 const storageEngine = require('../services/storageEngine');
 
+// Authoritative Nightly Room Rates (INR)
+const ROOM_RATES = {
+  'Standard Single': 3499,
+  'Standard Double': 4499,
+  'Deluxe Double': 5999,
+  'Family Room': 7499,
+  'Executive Suite': 9999,
+  'Presidential Suite': 18999
+};
+
 /* ---------------------------------------------------------
-   GET /api/bookings — List bookings with dual-tier fallback
+   GET /api/bookings — List reservations
    --------------------------------------------------------- */
 router.get('/', async (req, res) => {
   try {
@@ -51,7 +59,7 @@ router.get('/', async (req, res) => {
       const [dbRows] = await executeWithRetry(sql, params);
       if (dbRows && dbRows.length > 0) rows = dbRows;
     } catch (dbErr) {
-      // MySQL offline/initializing — fallback to resilient storage
+      // MySQL offline/initializing
     }
 
     // Merge persistent storage records
@@ -70,13 +78,12 @@ router.get('/', async (req, res) => {
 
 /* ---------------------------------------------------------
    POST /api/bookings — Create a new reservation
+   STRICT RULE: Registered customers only. NEVER inserts customer.
    --------------------------------------------------------- */
 router.post('/', async (req, res) => {
   try {
     const {
       email,
-      full_name,
-      phone_number,
       room_type,
       room_number,
       check_in_date,
@@ -84,7 +91,6 @@ router.post('/', async (req, res) => {
       nights,
       guests_count,
       special_requests,
-      total_amount,
       payment_method
     } = req.body;
 
@@ -96,29 +102,28 @@ router.post('/', async (req, res) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    const guestName = (full_name || cleanEmail.split('@')[0]).trim();
-    const bookingCode = 'SP' + Math.floor(100000 + Math.random() * 900000);
-    const numNights = parseInt(nights) || Math.max(1, Math.round((new Date(check_out_date) - new Date(check_in_date)) / (1000 * 60 * 60 * 24))) || 1;
-    const amount = parseFloat(total_amount) || 0;
-    const payMethod = payment_method || 'PhonePe UPI';
 
-    // 1. Ensure customer is saved to dual-tier storage
-    let savedCust = null;
-    if (authRouter.saveOrUpdateCustomer) {
-      savedCust = await authRouter.saveOrUpdateCustomer({
-        full_name: guestName,
-        email: cleanEmail,
-        phone_number: phone_number || '',
-        loyalty_tier: 'Bronze',
-        auth_provider: 'email'
+    // 1. STRICT AUTHENTICATION CHECK: Must be an existing registered customer!
+    const customer = await authRouter.getCustomerByEmail(cleanEmail);
+    if (!customer) {
+      return res.status(401).json({
+        success: false,
+        code: 'NOT_REGISTERED',
+        error: 'Only registered guests can make a reservation. Please log in or create an account first.'
       });
     }
 
-    const customerId = savedCust?.customer_id || Date.now();
+    // 2. Server-Side Calculations & Price Validation (Cannot be manipulated from client)
+    const numNights = parseInt(nights) || Math.max(1, Math.round((new Date(check_out_date) - new Date(check_in_date)) / (1000 * 60 * 60 * 24))) || 1;
+    const nightlyRate = ROOM_RATES[room_type] || 5999;
+    const calculatedTotal = nightlyRate * numNights;
+    const bookingCode = 'SP' + Math.floor(100000 + Math.random() * 900000);
+    const payMethod = payment_method || 'PhonePe UPI';
+
     let assignedRoomNumber = room_number || ('10' + Math.floor(1 + Math.random() * 8));
     let roomId = null;
 
-    // 2. MySQL transactional insertion (if online)
+    // 3. MySQL transactional insertion (if online)
     try {
       const [availableRooms] = await executeWithRetry(
         `SELECT room_id, room_number FROM rooms
@@ -139,8 +144,8 @@ router.post('/', async (req, res) => {
           payment_status, booking_status)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed', 'upcoming')`,
         [
-          bookingCode, customerId, roomId, room_type, check_in_date, check_out_date,
-          numNights, guests_count || 1, special_requests || '', amount, payMethod
+          bookingCode, customer.customer_id, roomId, room_type, check_in_date, check_out_date,
+          numNights, guests_count || 1, special_requests || '', calculatedTotal, payMethod
         ]
       );
 
@@ -153,13 +158,13 @@ router.post('/', async (req, res) => {
 
     const assignedFloor = assignedRoomNumber ? (assignedRoomNumber.length > 2 ? assignedRoomNumber.charAt(0) : '1') : '1';
 
-    // 3. Atomically persist booking in high-speed storage engine
+    // 4. Atomically persist booking in high-speed storage engine
     const newBooking = storageEngine.addBooking({
       booking_code: bookingCode,
-      customer_id: customerId,
-      customer_name: guestName,
-      customer_email: cleanEmail,
-      phone_number: phone_number || '',
+      customer_id: customer.customer_id,
+      customer_name: customer.full_name,
+      customer_email: customer.email,
+      phone_number: customer.phone_number || '',
       room_id: roomId,
       room_number: assignedRoomNumber,
       floor: assignedFloor,
@@ -169,33 +174,33 @@ router.post('/', async (req, res) => {
       nights: numNights,
       guests_count: guests_count || 1,
       special_requests: special_requests || '',
-      total_amount: amount,
+      total_amount: calculatedTotal,
       payment_method: payMethod,
       payment_status: 'completed',
       booking_status: 'upcoming'
     });
 
-    // 4. Non-blocking background notification dispatch
+    // 5. Non-blocking background notification dispatch
     setImmediate(async () => {
       try {
         const { sendBookingConfirmation } = require('../services/emailService');
         await sendBookingConfirmation({
-          to: cleanEmail,
-          guestName,
+          to: customer.email,
+          guestName: customer.full_name,
           bookingId: bookingCode,
           roomType: `${room_type} (Room ${assignedRoomNumber})`,
           checkIn: check_in_date,
           checkOut: check_out_date,
-          amount
+          amount: calculatedTotal
         });
       } catch (_) {}
 
       try {
         const { sendSMS, sendWhatsApp } = require('../services/twilioClient');
-        if (phone_number) {
-          const smsText = `🏰 Siddartha Palace: Booking #${bookingCode} confirmed! Room: ${room_type} (Room ${assignedRoomNumber}). Check-in: ${check_in_date}. Total: ₹${amount.toLocaleString('en-IN')}. Concierge: +91 7396704027`;
-          await sendSMS(phone_number, smsText);
-          await sendWhatsApp(phone_number, smsText);
+        if (customer.phone_number) {
+          const smsText = `🏰 Siddartha Palace: Booking #${bookingCode} confirmed for ${customer.full_name}! Room: ${room_type} (Room ${assignedRoomNumber}). Check-in: ${check_in_date}. Total: ₹${calculatedTotal.toLocaleString('en-IN')}. Concierge: +91 7396704027`;
+          await sendSMS(customer.phone_number, smsText);
+          await sendWhatsApp(customer.phone_number, smsText);
         }
       } catch (_) {}
     });
