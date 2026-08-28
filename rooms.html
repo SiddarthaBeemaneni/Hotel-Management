@@ -72,35 +72,11 @@
         </div>
       </div>
 
-      <!-- Interactive Callout / Guide Badge -->
-      <div class="light-prompt-badge" id="lightPromptBadge">
-        <span class="prompt-icon">💡</span>
-        <div class="prompt-text">
-          <b id="promptTitle">Palace Chamber in Total Darkness</b>
-          <span id="promptSubtitle">Click the glowing bulb or pull the golden cord to turn ON the lights &amp; reveal all room suites!</span>
-        </div>
-        <button type="button" class="btn small gold" id="quickLightBtn" style="padding:10px 20px; font-size:.88rem; white-space:nowrap; flex-shrink:0; cursor:pointer;">
-          <span id="quickLightBtnText">Turn ON Lights</span>
-        </button>
-      </div>
     </div>
   </div>
 </section>
 
 <section class="bg-ivory tight palace-chambers-section" id="roomsShowcaseWrapper">
-  <!-- Full-Page Darkness Shroud (Active when customer opens the page) -->
-  <div class="palace-blackout-shroud" id="palaceBlackoutShroud">
-    <div class="blackout-spotlight-glow"></div>
-    <div class="blackout-message-card">
-      <div class="blackout-bulb-icon">💡</div>
-      <h3>The Palace Chambers are in the Dark</h3>
-      <p>Click the glowing vintage bulb above or click the button below to turn ON the palace lights and reveal all room suites, photography, amenities, and rates.</p>
-      <button type="button" class="btn gold" id="blackoutTurnOnBtn" style="padding:12px 28px; font-size:.92rem; margin-top:8px;">
-        <span>💡 Turn ON the Palace Lights</span>
-      </button>
-    </div>
-  </div>
-
   <div class="container">
     <form class="panel reveal" id="searchForm" style="display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:20px; align-items:end; box-shadow:var(--shadow);">
       <div class="form-field" style="margin-bottom:0;">
@@ -483,7 +459,7 @@
   /* =========================================================
      PALACE CHANDELIER & EDISON BULB ILLUMINATION SYSTEM
      ========================================================= */
-  let isPalaceLightsOn = false;
+  let isPalaceLightsOn = true;
 
   // Web Audio Synthesized Click & Royal Shimmer Tone
   function playLightSwitchAudio(isOn) {
@@ -533,9 +509,6 @@
     const app = document.getElementById('palaceLightApp');
     const showcase = document.getElementById('roomsShowcaseWrapper');
     const pullChain = document.getElementById('pullChainWrap');
-    const promptTitle = document.getElementById('promptTitle');
-    const promptSubtitle = document.getElementById('promptSubtitle');
-    const quickBtnText = document.getElementById('quickLightBtnText');
 
     // Chain pull animation
     if (pullChain) {
@@ -546,45 +519,33 @@
     playLightSwitchAudio(isPalaceLightsOn);
 
     if (isPalaceLightsOn) {
-      // LIGHTS ON — Full Palace Radiant Illumination
       document.body.classList.add('palace-lights-on');
       document.body.classList.remove('palace-lights-dark');
       if (app) app.classList.add('lights-on');
       if (showcase) showcase.classList.add('lights-on');
-
-      if (promptTitle) promptTitle.textContent = '☀️ Palace Chambers Illuminated!';
-      if (promptSubtitle) promptSubtitle.textContent = 'All room suites, luxury amenities, photography, and rates are now in crystal-clear view.';
-      if (quickBtnText) quickBtnText.textContent = '🌙 Dim Palace Lights';
-
-      const floatText = document.getElementById('floatingToggleText');
-      if (floatText) floatText.textContent = 'Lights: ON (Click to Dim)';
     } else {
-      // LIGHTS OFF — Full Palace Deep Dark Chamber Mode
       document.body.classList.remove('palace-lights-on');
       document.body.classList.add('palace-lights-dark');
       if (app) app.classList.remove('lights-on');
       if (showcase) showcase.classList.remove('lights-on');
-
-      if (promptTitle) promptTitle.textContent = '🌙 Palace Chamber in the Dark';
-      if (promptSubtitle) promptSubtitle.textContent = 'Click the bulb or pull the golden cord to turn ON the lights & reveal all room details!';
-      if (quickBtnText) quickBtnText.textContent = '💡 Turn ON Lights';
-
-      const floatText = document.getElementById('floatingToggleText');
-      if (floatText) floatText.textContent = 'Lights: OFF (Turn ON)';
     }
   }
 
   // Event Listeners
   document.getElementById('edisonBulb')?.addEventListener('click', () => togglePalaceLights());
   document.getElementById('pullChainWrap')?.addEventListener('click', () => togglePalaceLights());
-  document.getElementById('quickLightBtn')?.addEventListener('click', () => togglePalaceLights());
-  document.getElementById('blackoutTurnOnBtn')?.addEventListener('click', () => togglePalaceLights(true));
-  document.getElementById('floatingLightToggle')?.addEventListener('click', () => togglePalaceLights());
 
-  // Initialize in Total Dark Palace state when customer opens the page
-  document.body.classList.add('palace-lights-dark');
+  // Initialize in Fully Illuminated Palace state
+  document.body.classList.add('palace-lights-on');
+  document.body.classList.remove('palace-lights-dark');
+  document.getElementById('palaceLightApp')?.classList.add('lights-on');
+  document.getElementById('roomsShowcaseWrapper')?.classList.add('lights-on');
+
   document.addEventListener('DOMContentLoaded', () => {
-    document.body.classList.add('palace-lights-dark');
+    document.body.classList.add('palace-lights-on');
+    document.body.classList.remove('palace-lights-dark');
+    document.getElementById('palaceLightApp')?.classList.add('lights-on');
+    document.getElementById('roomsShowcaseWrapper')?.classList.add('lights-on');
   });
 </script>
 </body>
