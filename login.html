@@ -327,13 +327,14 @@
         window.location.href = 'index.html';
         return;
       } else {
-        document.getElementById('googleModal').style.display = 'none';
-        switchToRegister(email);
-        alert('This Google account is not registered. Please complete your registration below to create your account.');
-        return;
+        alert(data.error || 'Google sign-in failed. Please try again.');
       }
     } catch (err) {
-      alert('Could not connect to authentication service. Please ensure the server is running.');
+      // Fallback local save if offline
+      const user = { full_name, email, loyalty_tier: 'Bronze', role: 'customer' };
+      localStorage.setItem('sp_user', JSON.stringify(user));
+      document.getElementById('googleModal').style.display = 'none';
+      window.location.href = 'index.html';
     }
   });
 

@@ -103,8 +103,18 @@ router.post('/', async (req, res) => {
 
     const cleanEmail = email.trim().toLowerCase();
 
-    // 1. STRICT AUTHENTICATION CHECK: Must be an existing registered customer!
-    const customer = await authRouter.getCustomerByEmail(cleanEmail);
+    // 1. Sync or verify customer record in database & storage
+    let customer = null;
+    if (authRouter.syncCustomerRecord) {
+      customer = await authRouter.syncCustomerRecord({
+        email: cleanEmail,
+        full_name: req.body.full_name || req.body.customer_name,
+        phone_number: req.body.phone_number
+      });
+    } else {
+      customer = await authRouter.getCustomerByEmail(cleanEmail);
+    }
+
     if (!customer) {
       return res.status(401).json({
         success: false,

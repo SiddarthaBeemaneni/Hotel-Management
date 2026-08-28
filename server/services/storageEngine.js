@@ -1,9 +1,9 @@
 /* =========================================================
    SIDDARTHA PALACE — Production Storage Engine
-   Strict Business Rules:
-   - Registration creates exactly ONE customer record with unique email check.
-   - Login / Booking / Reset NEVER inserts a new customer.
-   - Atomic crash-proof disk persistence with debounced sync.
+   Features:
+   - Automatically stores & updates all logged-in and registered customers
+   - Atomic disk persistence with sub-millisecond in-memory cache
+   - Real-time reflection in Admin Console and Guest Portal
    ========================================================= */
 
 const fs = require('fs');
@@ -28,7 +28,7 @@ const memoryStore = {
   payments:  []
 };
 
-// Base authoritative seed accounts
+// Authoritative root admin accounts
 const DEFAULT_ACCOUNTS = [
   {
     customer_id: 1001,
@@ -39,7 +39,8 @@ const DEFAULT_ACCOUNTS = [
     loyalty_tier: 'Platinum',
     auth_provider: 'google',
     password: 'Password123',
-    created_at: '2026-08-28T00:00:00.000Z'
+    created_at: '2026-08-28T00:00:00.000Z',
+    last_login: new Date().toISOString()
   },
   {
     customer_id: 1002,
@@ -50,7 +51,8 @@ const DEFAULT_ACCOUNTS = [
     loyalty_tier: 'Platinum',
     auth_provider: 'email',
     password: 'Admin@123',
-    created_at: '2026-08-28T00:00:00.000Z'
+    created_at: '2026-08-28T00:00:00.000Z',
+    last_login: new Date().toISOString()
   }
 ];
 
@@ -63,7 +65,6 @@ function initializeStorage() {
         data.forEach(c => {
           if (c && c.email) {
             const cleanEmail = c.email.toLowerCase().trim();
-            // Exclude invalid test accounts
             if (!cleanEmail.includes('stress.user') && !cleanEmail.includes('@test.com')) {
               memoryStore.customers.set(cleanEmail, c);
             }
@@ -86,7 +87,7 @@ function initializeStorage() {
       }
     }
 
-    console.log(`✓ Storage Initialized: ${memoryStore.customers.size} Registered Customers, ${memoryStore.bookings.length} Bookings.`);
+    console.log(`✓ Storage Initialized: ${memoryStore.customers.size} Logged-in/Registered Customers, ${memoryStore.bookings.length} Bookings.`);
   } catch (err) {
     console.warn('⚠️ [Storage Init Error]:', err.message);
     DEFAULT_ACCOUNTS.forEach(acc => memoryStore.customers.set(acc.email.toLowerCase(), acc));
@@ -125,7 +126,7 @@ function queueSaveBookings() {
 }
 
 // -----------------------------------------------------------------------------
-// STRICT CUSTOMER DATA OPERATIONS
+// CUSTOMER DATA OPERATIONS
 // -----------------------------------------------------------------------------
 
 function getCustomer(email) {
@@ -138,40 +139,43 @@ function getAllCustomers() {
 }
 
 /**
- * Register a NEW customer (ONLY called from registration).
- * Throws an error if email already exists.
+ * Save or Update Customer Details on Login, Google Sign-in, or Registration.
+ * Automatically persists to database so details are immediately visible to the Admin.
  */
-function registerCustomer({ full_name, email, phone_number, password, nationality, loyalty_tier, auth_provider }) {
+function saveOrUpdateCustomer({ full_name, email, phone_number, password, nationality, loyalty_tier, auth_provider }) {
   const cleanEmail = (email || '').trim().toLowerCase();
-  if (!cleanEmail) throw new Error('Email is required.');
+  if (!cleanEmail) return null;
 
-  if (memoryStore.customers.has(cleanEmail)) {
-    const err = new Error('An account with this email is already registered.');
-    err.code = 'EMAIL_ALREADY_REGISTERED';
-    throw err;
+  const existing = memoryStore.customers.get(cleanEmail);
+  const now = new Date().toISOString();
+
+  let name = (full_name || cleanEmail.split('@')[0]).trim();
+  // Don't overwrite an existing real full name with an email handle
+  if (existing && existing.full_name && (!full_name || full_name === cleanEmail.split('@')[0])) {
+    name = existing.full_name;
   }
 
-  const newCustomer = {
-    customer_id: Date.now() + Math.floor(Math.random() * 1000),
-    full_name: (full_name || cleanEmail.split('@')[0]).trim(),
+  const updated = {
+    customer_id: existing ? existing.customer_id : (Date.now() + Math.floor(Math.random() * 1000)),
+    full_name: name,
     email: cleanEmail,
-    phone_number: phone_number || '',
-    password: password || '',
-    nationality: nationality || 'India',
-    loyalty_tier: loyalty_tier || 'Bronze',
-    auth_provider: auth_provider || 'email',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    phone_number: phone_number || existing?.phone_number || '',
+    password: password || existing?.password || '',
+    nationality: nationality || existing?.nationality || 'India',
+    loyalty_tier: loyalty_tier || existing?.loyalty_tier || 'Bronze',
+    auth_provider: auth_provider || existing?.auth_provider || 'email',
+    created_at: existing ? existing.created_at : now,
+    updated_at: now,
+    last_login: now
   };
 
-  memoryStore.customers.set(cleanEmail, newCustomer);
+  memoryStore.customers.set(cleanEmail, updated);
   queueSaveCustomers();
-  return newCustomer;
+  return updated;
 }
 
 /**
- * Update an EXISTING customer.
- * Returns null if customer does not exist (NEVER inserts).
+ * Update an existing customer without overwriting unprovided fields
  */
 function updateCustomer(email, updateFields = {}) {
   const cleanEmail = (email || '').trim().toLowerCase();
@@ -183,8 +187,8 @@ function updateCustomer(email, updateFields = {}) {
   const updated = {
     ...existing,
     ...updateFields,
-    customer_id: existing.customer_id, // Immutable ID
-    email: cleanEmail,                 // Immutable Email
+    customer_id: existing.customer_id,
+    email: cleanEmail,
     updated_at: new Date().toISOString()
   };
 
@@ -241,7 +245,7 @@ initializeStorage();
 module.exports = {
   getCustomer,
   getAllCustomers,
-  registerCustomer,
+  saveOrUpdateCustomer,
   updateCustomer,
   getAllBookings,
   addBooking,

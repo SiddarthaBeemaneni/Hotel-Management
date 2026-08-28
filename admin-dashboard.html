@@ -733,9 +733,12 @@
   document.addEventListener('DOMContentLoaded', () => {
     initAdminIdentity();
     loadAdminData();
+    // Real-time live synchronization: Automatically updates every 4 seconds
+    setInterval(loadAdminData, 4000);
   });
   initAdminIdentity();
   loadAdminData();
+  setInterval(loadAdminData, 4000);
 </script>
 </body>
 </html>

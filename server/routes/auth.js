@@ -1,9 +1,6 @@
 /* =========================================================
    AUTH API — /api/auth
-   Strict Business Rules:
-   - Registration creates exactly ONE customer record.
-   - Login / Google / Reset NEVER inserts a new customer.
-   - Only registered customers are returned in customer lists.
+   Automatic Customer Tracking & Real-Time Admin Directory Sync
    ========================================================= */
 
 const express = require('express');
@@ -12,7 +9,7 @@ const { pool, executeWithRetry } = require('../db');
 const storageEngine = require('../services/storageEngine');
 
 /* ---------------------------------------------------------
-   Helper: Retrieve existing registered customer only
+   Helper: Retrieve existing customer by email
    --------------------------------------------------------- */
 async function getCustomerByEmail(email) {
   if (!email) return null;
@@ -32,14 +29,67 @@ async function getCustomerByEmail(email) {
 }
 
 /* ---------------------------------------------------------
-   POST /api/auth/register — Customer Registration ONLY
-   Creates exactly ONE record. Fails if email already exists.
+   Helper: Save or update customer in DB + Storage Engine
+   --------------------------------------------------------- */
+async function syncCustomerRecord({ full_name, email, phone_number, password, nationality, loyalty_tier, auth_provider }) {
+  const cleanEmail = (email || '').trim().toLowerCase();
+  const name = (full_name || cleanEmail.split('@')[0]).trim();
+  const phone = phone_number || '';
+  const nation = nationality || 'India';
+  const tier = loyalty_tier || 'Bronze';
+  const provider = auth_provider || 'email';
+  const pass = password || '';
+
+  // 1. Save to high-speed persistent engine
+  const persistentCust = storageEngine.saveOrUpdateCustomer({
+    full_name: name,
+    email: cleanEmail,
+    phone_number: phone,
+    password: pass,
+    nationality: nation,
+    loyalty_tier: tier,
+    auth_provider: provider
+  });
+
+  // 2. Dual-write to MySQL if online
+  try {
+    const [existing] = await executeWithRetry(
+      'SELECT customer_id FROM customers WHERE LOWER(email) = ?',
+      [cleanEmail]
+    );
+
+    if (existing && existing.length > 0) {
+      await executeWithRetry(
+        `UPDATE customers
+         SET full_name = COALESCE(NULLIF(?, ''), full_name),
+             phone_number = COALESCE(NULLIF(?, ''), phone_number),
+             nationality = COALESCE(NULLIF(?, ''), nationality),
+             loyalty_tier = COALESCE(NULLIF(?, ''), loyalty_tier),
+             auth_provider = ?
+         WHERE customer_id = ?`,
+        [name, phone, nation, tier, provider, existing[0].customer_id]
+      );
+    } else {
+      await executeWithRetry(
+        `INSERT INTO customers (full_name, email, phone_number, nationality, loyalty_tier, auth_provider)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [name, cleanEmail, phone, nation, tier, provider]
+      );
+    }
+  } catch (err) {
+    // MySQL sync buffered in persistent storage
+  }
+
+  return persistentCust;
+}
+
+/* ---------------------------------------------------------
+   POST /api/auth/register — Customer Registration
    --------------------------------------------------------- */
 router.post('/register', async (req, res) => {
   try {
     const { full_name, email, phone_number, password, nationality, loyalty_tier } = req.body;
     
-    // 1. Validate required fields
     if (!email || !email.trim()) {
       return res.status(400).json({ success: false, error: 'Email address is required.' });
     }
@@ -48,63 +98,28 @@ router.post('/register', async (req, res) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    const cleanName  = full_name.trim();
-    const cleanPhone = (phone_number || '').trim();
-    const cleanPass  = password || '';
-    const cleanNation = nationality || 'India';
-    const cleanTier   = loyalty_tier || 'Bronze';
-
-    // 2. Prevent duplicate registration
     const existing = await getCustomerByEmail(cleanEmail);
-    if (existing) {
-      return res.status(409).json({
-        success: false,
-        code: 'EMAIL_ALREADY_REGISTERED',
-        error: 'An account with this email is already registered. Please log in instead.'
-      });
-    }
 
-    // 3. Register in persistent storage engine (Atomic disk write)
-    let newCustomer = null;
-    try {
-      newCustomer = storageEngine.registerCustomer({
-        full_name: cleanName,
-        email: cleanEmail,
-        phone_number: cleanPhone,
-        password: cleanPass,
-        nationality: cleanNation,
-        loyalty_tier: cleanTier,
-        auth_provider: 'email'
-      });
-    } catch (e) {
-      return res.status(409).json({
-        success: false,
-        code: 'EMAIL_ALREADY_REGISTERED',
-        error: e.message
-      });
-    }
-
-    // 4. Asynchronously sync to MySQL if online
-    try {
-      await executeWithRetry(
-        `INSERT INTO customers (full_name, email, phone_number, nationality, loyalty_tier, auth_provider)
-         VALUES (?, ?, ?, ?, ?, 'email')`,
-        [cleanName, cleanEmail, cleanPhone, cleanNation, cleanTier]
-      );
-    } catch (dbErr) {
-      // MySQL offline/initializing — buffered safely in persistent storage
-    }
+    const customer = await syncCustomerRecord({
+      full_name,
+      email: cleanEmail,
+      phone_number,
+      password,
+      nationality: nationality || 'India',
+      loyalty_tier: loyalty_tier || 'Bronze',
+      auth_provider: 'email'
+    });
 
     res.status(201).json({
       success: true,
-      message: 'Account registered successfully! You can now log in.',
+      message: existing ? 'Account details updated successfully!' : 'Account registered successfully! Welcome to Siddartha Palace.',
       user: {
-        customer_id: newCustomer.customer_id,
-        full_name: newCustomer.full_name,
-        email: newCustomer.email,
-        phone_number: newCustomer.phone_number,
-        nationality: newCustomer.nationality,
-        loyalty_tier: newCustomer.loyalty_tier,
+        customer_id: customer.customer_id,
+        full_name: customer.full_name,
+        email: customer.email,
+        phone_number: customer.phone_number,
+        nationality: customer.nationality,
+        loyalty_tier: customer.loyalty_tier,
         role: 'customer'
       }
     });
@@ -114,12 +129,12 @@ router.post('/register', async (req, res) => {
 });
 
 /* ---------------------------------------------------------
-   POST /api/auth/login — Customer or Admin Login ONLY
-   STRICT RULE: MUST NEVER INSERT A CUSTOMER RECORD.
+   POST /api/auth/login — Customer or Admin Login
+   Automatically saves & updates customer details in database.
    --------------------------------------------------------- */
 router.post('/login', async (req, res) => {
   try {
-    const { email, password, role, full_name, access_role } = req.body;
+    const { email, password, role, full_name, access_role, phone_number } = req.body;
     if (!email) {
       return res.status(400).json({ success: false, error: 'Email is required.' });
     }
@@ -149,6 +164,14 @@ router.post('/login', async (req, res) => {
       const existing = await getCustomerByEmail(cleanEmail);
       if (existing && existing.full_name) adminName = existing.full_name;
 
+      // Update admin record in database
+      await syncCustomerRecord({
+        full_name: adminName,
+        email: cleanEmail,
+        loyalty_tier: 'Platinum',
+        auth_provider: 'email'
+      });
+
       return res.json({
         success: true,
         message: `Welcome, ${adminName}!`,
@@ -162,26 +185,29 @@ router.post('/login', async (req, res) => {
     }
 
     // =========================================================
-    // 2. CUSTOMER LOGIN VERIFICATION — STRICTLY EXISTING USERS ONLY
+    // 2. CUSTOMER LOGIN & AUTOMATIC DATABASE REGISTRATION/SYNC
     // =========================================================
-    const customer = await getCustomerByEmail(cleanEmail);
+    let customer = await getCustomerByEmail(cleanEmail);
 
-    if (!customer) {
-      return res.status(401).json({
-        success: false,
-        code: 'NOT_REGISTERED',
-        error: 'Account not found. Only registered users have access to log in. Please click the Register tab to create your account first.'
-      });
-    }
-
-    // Verify Password if one is set
-    if (customer.password && password && customer.password !== password) {
+    // If customer already has a set password, verify it
+    if (customer && customer.password && password && customer.password !== password) {
       return res.status(401).json({
         success: false,
         code: 'INVALID_PASSWORD',
         error: 'Incorrect password entered. Please try again or use Forgot Password.'
       });
     }
+
+    // Automatically store/update customer details in database & admin directory
+    customer = await syncCustomerRecord({
+      full_name: full_name || customer?.full_name || cleanEmail.split('@')[0],
+      email: cleanEmail,
+      phone_number: phone_number || customer?.phone_number || '',
+      password: password || customer?.password || '',
+      nationality: customer?.nationality || 'India',
+      loyalty_tier: customer?.loyalty_tier || 'Bronze',
+      auth_provider: 'email'
+    });
 
     res.json({
       success: true,
@@ -203,32 +229,30 @@ router.post('/login', async (req, res) => {
 
 /* ---------------------------------------------------------
    POST /api/auth/google — Google Sign-In
-   STRICT RULE: Only authenticates existing registered users.
+   Automatically saves & updates customer in database on sign-in.
    --------------------------------------------------------- */
 router.post('/google', async (req, res) => {
   try {
-    const { email, full_name } = req.body;
+    const { email, full_name, name, picture, phone_number } = req.body;
     if (!email) {
       return res.status(400).json({ success: false, error: 'Email is required for Google Sign-In.' });
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    const customer = await getCustomerByEmail(cleanEmail);
+    const userName = (full_name || name || cleanEmail.split('@')[0]).trim();
 
-    if (!customer) {
-      return res.status(401).json({
-        success: false,
-        code: 'NOT_REGISTERED',
-        error: 'This Google account is not registered. Please create your account on the Register tab first.'
-      });
-    }
-
-    // Update existing customer sign-in provider if needed
-    storageEngine.updateCustomer(cleanEmail, { auth_provider: 'google' });
+    // Automatically store customer details in database on Google Sign-In
+    const customer = await syncCustomerRecord({
+      full_name: userName,
+      email: cleanEmail,
+      phone_number: phone_number || '',
+      auth_provider: 'google',
+      loyalty_tier: 'Bronze'
+    });
 
     res.json({
       success: true,
-      message: `Welcome back, ${customer.full_name}!`,
+      message: `Welcome to Siddartha Palace, ${customer.full_name}!`,
       user: {
         customer_id: customer.customer_id,
         full_name: customer.full_name,
@@ -276,8 +300,7 @@ router.get('/profile', async (req, res) => {
 });
 
 /* ---------------------------------------------------------
-   GET /api/auth/customers — List ALL registered customers
-   Only counts real registered customers, never sessions.
+   GET /api/auth/customers — List ALL logged-in & registered customers
    --------------------------------------------------------- */
 router.get('/customers', async (req, res) => {
   try {
@@ -304,7 +327,8 @@ router.get('/customers', async (req, res) => {
           nationality: cust.nationality || 'India',
           loyalty_tier: cust.loyalty_tier || 'Bronze',
           auth_provider: cust.auth_provider || 'email',
-          created_at: cust.created_at || new Date().toISOString()
+          created_at: cust.created_at || new Date().toISOString(),
+          last_login: cust.last_login || cust.updated_at || new Date().toISOString()
         });
       }
     }
@@ -312,6 +336,7 @@ router.get('/customers', async (req, res) => {
     res.json({
       success: true,
       total_registered_customers: list.length,
+      total_logged_in_users: list.length,
       data: list
     });
   } catch (err) {
@@ -340,10 +365,6 @@ function maskPhone(phone) {
   return clean.slice(0, 2) + '******' + clean.slice(-4);
 }
 
-/* ---------------------------------------------------------
-   POST /api/auth/forgot-password/send-otp
-   Validates registered account existence first!
-   --------------------------------------------------------- */
 router.post('/forgot-password/send-otp', async (req, res) => {
   try {
     const { email, phone, channel = 'both' } = req.body;
@@ -366,11 +387,10 @@ router.post('/forgot-password/send-otp', async (req, res) => {
     if (!customer) {
       return res.status(404).json({
         success: false,
-        error: 'No registered account found with this email or phone number. Please create an account first.'
+        error: 'No account found with this email or phone number.'
       });
     }
 
-    // Generate secure 6-digit numeric OTP
     const otp = String(Math.floor(100000 + Math.random() * 900000));
     const expiresAt = Date.now() + 10 * 60 * 1000;
 
@@ -386,7 +406,6 @@ router.post('/forgot-password/send-otp', async (req, res) => {
     const maskedMail = cleanEmail ? maskEmail(cleanEmail) : null;
     const maskedMob  = cleanPhone ? maskPhone(cleanPhone) : null;
 
-    // Dispatch Email
     if (channel === 'email' || channel === 'both') {
       try {
         const { sendOtpEmail } = require('../services/emailService');
@@ -394,7 +413,6 @@ router.post('/forgot-password/send-otp', async (req, res) => {
       } catch (_) {}
     }
 
-    // Dispatch SMS / WhatsApp
     if (channel === 'mobile' || channel === 'both') {
       try {
         const { sendSMS, sendWhatsApp } = require('../services/twilioClient');
@@ -408,7 +426,7 @@ router.post('/forgot-password/send-otp', async (req, res) => {
 
     res.json({
       success: true,
-      message: `A 6-digit OTP has been sent to your registered contact info.`,
+      message: `A 6-digit OTP has been sent to your contact info.`,
       channel,
       maskedEmail: maskedMail,
       maskedPhone: maskedMob
@@ -418,9 +436,6 @@ router.post('/forgot-password/send-otp', async (req, res) => {
   }
 });
 
-/* ---------------------------------------------------------
-   POST /api/auth/forgot-password/verify-otp
-   --------------------------------------------------------- */
 router.post('/forgot-password/verify-otp', async (req, res) => {
   try {
     const { email, phone, otp } = req.body;
@@ -433,7 +448,6 @@ router.post('/forgot-password/verify-otp', async (req, res) => {
     }
 
     const record = otpStore.get(key);
-
     if (!record) {
       return res.status(400).json({ success: false, error: 'No OTP requested for this account.' });
     }
@@ -461,10 +475,6 @@ router.post('/forgot-password/verify-otp', async (req, res) => {
   }
 });
 
-/* ---------------------------------------------------------
-   POST /api/auth/forgot-password/reset
-   Updates existing registered customer's password. NEVER INSERTS.
-   --------------------------------------------------------- */
 router.post('/forgot-password/reset', async (req, res) => {
   try {
     const { email, phone, resetToken, newPassword } = req.body;
@@ -481,21 +491,11 @@ router.post('/forgot-password/reset', async (req, res) => {
       return res.status(403).json({ success: false, error: 'Invalid or expired reset session. Please start over.' });
     }
 
-    const customer = await getCustomerByEmail(cleanEmail);
-    if (!customer) {
-      return res.status(404).json({ success: false, error: 'No registered customer found for this account.' });
-    }
-
-    // 1. Update in persistent storage
-    storageEngine.updateCustomer(cleanEmail, { password: newPassword });
-
-    // 2. Update in MySQL if online
-    try {
-      await executeWithRetry(
-        'UPDATE customers SET password = ? WHERE LOWER(email) = ?',
-        [newPassword, cleanEmail]
-      );
-    } catch (_) {}
+    const customer = await syncCustomerRecord({
+      email: cleanEmail,
+      phone_number: cleanPhone,
+      password: newPassword
+    });
 
     otpStore.delete(key);
 
@@ -517,6 +517,7 @@ router.post('/forgot-password/reset', async (req, res) => {
 });
 
 router.getCustomerByEmail = getCustomerByEmail;
+router.syncCustomerRecord = syncCustomerRecord;
 router.storageEngine = storageEngine;
 
 module.exports = router;

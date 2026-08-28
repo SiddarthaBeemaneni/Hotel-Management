@@ -31,5 +31,18 @@
     "loyalty_tier": "Bronze",
     "auth_provider": "email",
     "created_at": "2026-08-28T15:44:20.611Z"
+  },
+  {
+    "customer_id": 1787935655878,
+    "full_name": "Priya Sharma",
+    "email": "priya.sharma@gmail.com",
+    "phone_number": "+919876543210",
+    "password": "",
+    "nationality": "India",
+    "loyalty_tier": "Bronze",
+    "auth_provider": "email",
+    "created_at": "2026-08-28T16:47:35.412Z",
+    "updated_at": "2026-08-28T16:47:35.423Z",
+    "last_login": "2026-08-28T16:47:35.423Z"
   }
 ]
