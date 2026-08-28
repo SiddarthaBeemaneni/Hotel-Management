@@ -280,4 +280,20 @@ router.put('/:code/cancel', async (req, res) => {
   }
 });
 
+/* ---------------------------------------------------------
+   POST /api/bookings/reset — Reset and clear all bookings
+   --------------------------------------------------------- */
+router.post('/reset', async (req, res) => {
+  try {
+    memoryBookings.length = 0;
+    try {
+      await pool.execute('DELETE FROM bookings');
+      await pool.execute("UPDATE rooms SET status = 'vacant'");
+    } catch (e) {}
+    res.json({ success: true, message: 'All bookings cleared successfully.' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 module.exports = router;

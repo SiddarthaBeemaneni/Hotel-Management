@@ -102,7 +102,10 @@
       <div class="panel mt-3">
         <div class="flex justify-between items-center" style="flex-wrap:wrap; gap:10px;">
           <h3 style="margin:0;">Recent Customer Reservations</h3>
-          <a href="rooms.html" class="btn small gold" style="padding:6px 14px;"><span>+ Book Room</span></a>
+          <div class="flex gap-1">
+            <button type="button" onclick="resetAllBookings()" class="btn small outline" style="padding:6px 12px; font-size:.78rem; border-color:#d32f2f; color:#d32f2f;" title="Clear all bookings and start fresh"><span>🗑️ Clear Bookings</span></button>
+            <a href="rooms.html" class="btn small gold" style="padding:6px 14px;"><span>+ Book Room</span></a>
+          </div>
         </div>
         <div class="divider-arch" style="margin:14px 0 20px;"></div>
         <div class="table-wrap">
@@ -152,7 +155,10 @@
     <section id="sec-bookings" class="dash-section mt-3" style="display:none;">
       <div class="flex justify-between items-center mt-1" style="flex-wrap:wrap; gap:10px;">
         <h3 style="margin:0;">All Customer Bookings</h3>
-        <span class="muted" id="bookingsTotalCountText">0 Total Bookings</span>
+        <div class="flex gap-1 items-center">
+          <span class="muted" id="bookingsTotalCountText">0 Total Bookings</span>
+          <button type="button" onclick="resetAllBookings()" class="btn small outline" style="padding:6px 12px; font-size:.78rem; border-color:#d32f2f; color:#d32f2f;" title="Clear all bookings"><span>🗑️ Reset All</span></button>
+        </div>
       </div>
       <div class="table-wrap mt-2">
         <table>
@@ -369,6 +375,18 @@
     }
 
     renderAdminDashboard();
+  }
+
+  async function resetAllBookings() {
+    if (!confirm('Are you sure you want to clear all bookings from the database? This will reset all room bookings to 0.')) return;
+    try {
+      await fetch(`${API_BASE}/bookings/reset`, { method: 'POST' });
+      localStorage.removeItem('sp_user_bookings');
+      await loadAdminData();
+      alert('All bookings have been successfully reset to 0!');
+    } catch (e) {
+      console.warn('Reset error:', e);
+    }
   }
 
   function renderAdminDashboard() {
