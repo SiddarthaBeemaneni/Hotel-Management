@@ -22,6 +22,7 @@
     "created_at": "2026-08-28T00:00:00.000Z"
   },
   {
+    "customer_id": 1003,
     "full_name": "honey",
     "email": "xys@gmail.com",
     "phone_number": "9865841269",
@@ -29,32 +30,6 @@
     "nationality": "India",
     "loyalty_tier": "Bronze",
     "auth_provider": "email",
-    "customer_id": 1787931861500,
-    "updated_at": "2026-08-28T15:44:20.611Z",
     "created_at": "2026-08-28T15:44:20.611Z"
-  },
-  {
-    "customer_id": 1787932428789,
-    "full_name": "Rajesh Sharma",
-    "email": "rajesh.sharma@gmail.com",
-    "phone_number": "+919812345678",
-    "password": "SecurePassword123",
-    "nationality": "India",
-    "loyalty_tier": "Bronze",
-    "auth_provider": "email",
-    "created_at": "2026-08-28T15:53:48.013Z",
-    "updated_at": "2026-08-28T15:53:48.013Z"
-  },
-  {
-    "customer_id": 1787932459489,
-    "full_name": "Anil Kapoor",
-    "email": "anil.kapoor@bollywood.in",
-    "phone_number": "+919820098200",
-    "password": "HeroPassword123",
-    "nationality": "India",
-    "loyalty_tier": "Bronze",
-    "auth_provider": "email",
-    "created_at": "2026-08-28T15:54:19.071Z",
-    "updated_at": "2026-08-28T15:54:19.071Z"
   }
 ]
