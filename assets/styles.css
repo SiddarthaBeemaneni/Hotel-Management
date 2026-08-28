@@ -357,7 +357,7 @@ img,svg{display:block; max-width:100%;}
 /* Luminous Palace Moon */
 .palace-moon {
   position: absolute;
-  top: 9%;
+  top: 3.8%;
   right: 12%;
   width: 76px;
   height: 76px;
@@ -409,7 +409,7 @@ img,svg{display:block; max-width:100%;}
 
 @media (max-width: 768px) {
   .palace-moon {
-    top: 7%;
+    top: 3%;
     right: 8%;
     width: 54px;
     height: 54px;
