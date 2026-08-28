@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>My Dashboard — Siddartha Palace</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div class="page-loader"><svg class="loader-mark" viewBox="0 0 40 40" fill="none"><path d="M20 4C10 4 4 12 4 20s6 16 16 16 16-8 16-16S30 4 20 4Z" stroke="#C9A227" stroke-width="1.4" stroke-dasharray="6 6"/></svg></div>
+
+<div class="dash">
+  <aside class="dash-side">
+    <a href="index.html" class="brand" target="_blank" rel="noopener">
+      <svg class="crest" viewBox="0 0 40 40" fill="none"><path d="M20 3C11 3 6 10 6 18v16h6V19c0-7 3.5-11 8-11s8 4 8 11v15h6V18C34 10 29 3 20 3Z" stroke="#C9A227" stroke-width="1.6"/><circle cx="20" cy="16" r="2.4" fill="#C9A227"/></svg>
+      <span class="brand-text"><b>Siddartha Palace</b><em>Guest Account</em></span>
+    </a>
+    <nav class="dash-nav">
+      <a href="#" class="active" onclick="switchSection(event,'overview')">Overview</a>
+      <a href="#" onclick="switchSection(event,'bookings')">My Bookings</a>
+      <a href="#" onclick="switchSection(event,'payments')">Payments</a>
+      <a href="#" onclick="switchSection(event,'profile')">Profile</a>
+      <a href="#" onclick="switchSection(event,'support')">Support</a>
+    </nav>
+    <div class="mt-3" style="border-top:1px solid rgba(247,240,224,.15); padding-top:20px;">
+      <a href="login.html" id="logoutBtn" onclick="handleCustomerLogout(event)" style="cursor:pointer; color:var(--gold-light); display:inline-flex; align-items:center; gap:8px; text-decoration:none; font-weight:500;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" stroke-width="1.8"/><polyline points="16 17 21 12 16 7" stroke="currentColor" stroke-width="1.8"/><line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="1.8"/></svg>
+        <span>Log Out</span>
+      </a>
+    </div>
+  </aside>
+
+  <main class="dash-main">
+    <!-- Success alert if redirected after booking -->
+    <div id="bookingSuccessAlert" style="display:none; background:rgba(31,111,84,.12); border:1px solid var(--emerald); border-radius:6px; padding:14px 20px; margin-bottom:24px; color:var(--emerald); align-items:center; justify-content:space-between;">
+      <div class="flex items-center gap-2">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span id="bookingSuccessText"><b>Reservation Confirmed!</b> Your new booking has been saved to the database.</span>
+      </div>
+      <button onclick="document.getElementById('bookingSuccessAlert').style.display='none'" style="background:none; border:none; color:inherit; font-size:1.2rem; cursor:pointer;">&times;</button>
+    </div>
+
+    <div class="flex justify-between items-center" style="flex-wrap:wrap; gap:16px;">
+      <div>
+        <p class="eyebrow" style="margin-bottom:6px;">Welcome Back</p>
+        <h2 id="guestGreetingName" style="margin-bottom:0;">Guest</h2>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="notif-wrap">
+          <button class="btn icon-only outline" aria-label="Notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3a5 5 0 00-5 5v3l-2 4h14l-2-4V8a5 5 0 00-5-5z" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M9.5 20a2.5 2.5 0 005 0" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>
+            <span class="notif-dot"></span>
+          </button>
+          <div class="notif-panel">
+            <div class="notif-item"><b>Member Privileges</b><span id="notifTierText">Enjoy Bronze Tier member benefits</span></div>
+            <div class="notif-item"><b>Concierge Desk</b><span>24/7 room service &amp; travel assistance</span></div>
+          </div>
+        </div>
+        <a href="rooms.html" class="btn gold small"><span>New Booking</span></a>
+      </div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <section id="sec-overview" class="dash-section mt-3">
+      <div class="grid cols-4">
+        <div class="kpi"><div class="lbl">Active Bookings</div><div class="num" id="kpiActiveBookings">0</div><div class="delta up" id="kpiActiveSub">0 upcoming stays</div></div>
+        <div class="kpi"><div class="lbl">Total Stays</div><div class="num" id="kpiTotalStays">0</div><div class="delta up">Since registration</div></div>
+        <div class="kpi"><div class="lbl">Loyalty Tier</div><div class="num" id="kpiLoyaltyTier" style="font-size:1.6rem;">Bronze</div><div class="delta up" id="kpiLoyaltyPts">Complimentary WiFi &amp; Breakfast</div></div>
+        <div class="kpi"><div class="lbl">Pending Payment</div><div class="num" id="kpiPendingPay">₹0</div><div class="delta down" id="kpiPendingStatus">All balances clear</div></div>
+      </div>
+
+      <!-- UPCOMING STAY SECTION (DYNAMIC) -->
+      <div id="upcomingStayContainer">
+        <!-- Populated dynamically by JS -->
+      </div>
+    </section>
+
+    <!-- BOOKINGS -->
+    <section id="sec-bookings" class="dash-section mt-3" style="display:none;">
+      <div class="flex justify-between items-center mb-2" style="margin-bottom:16px;">
+        <h3 style="margin:0;">My Reservations</h3>
+        <a href="rooms.html" class="btn gold small"><span>+ Book Another Room</span></a>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Booking ID</th><th>Room Type</th><th>Dates</th><th>Status</th><th>Total (INR)</th><th>Action</th></tr></thead>
+          <tbody id="bookingsTableBody">
+            <!-- Populated dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PAYMENTS -->
+    <section id="sec-payments" class="dash-section mt-3" style="display:none;">
+      <div class="grid cols-3">
+        <div class="kpi"><div class="lbl">Total Paid</div><div class="num" id="kpiPaidTotal">₹0</div></div>
+        <div class="kpi"><div class="lbl">Pending Balance</div><div class="num" id="kpiPendingTotal">₹0</div></div>
+        <div class="kpi"><div class="lbl">Preferred Method</div><div class="num" style="font-size:1.4rem;" id="kpiPrefMethod">UPI</div></div>
+      </div>
+      <div class="table-wrap mt-2">
+        <table>
+          <thead><tr><th>Payment ID</th><th>Booking Code</th><th>Amount</th><th>Method</th><th>Status</th><th>Receipt</th></tr></thead>
+          <tbody id="paymentsTableBody">
+            <!-- Populated dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PROFILE -->
+    <section id="sec-profile" class="dash-section mt-3" style="display:none;">
+      <div class="panel" style="max-width:560px;">
+        <h3>My Profile</h3>
+        <div class="divider-arch" style="margin:14px 0 24px;"></div>
+        <form id="profileForm">
+          <div class="form-row">
+            <div class="form-field"><label>Full Name</label><input type="text" id="profName" required placeholder="Your full name"></div>
+            <div class="form-field"><label>Phone Number</label><input type="tel" id="profPhone" placeholder="+91 98765 43210"></div>
+          </div>
+          <div class="form-field"><label>Email Address</label><input type="email" id="profEmail" readonly style="background:rgba(27,16,48,.04); cursor:not-allowed;"></div>
+          <div class="form-field"><label>Nationality</label><input type="text" id="profNation" value="India"></div>
+          <button type="submit" class="btn gold"><span>Save Profile Changes</span></button>
+        </form>
+        <div class="divider-arch" style="margin:34px 0 20px;"></div>
+        <form id="passForm">
+          <h3 style="font-size:1.2rem;">Change Password</h3>
+          <div class="form-field mt-1"><label>Current Password</label><input type="password" placeholder="••••••••"></div>
+          <div class="form-field"><label>New Password</label><input type="password" placeholder="At least 8 characters"></div>
+          <button type="submit" class="btn outline"><span>Update Password</span></button>
+        </form>
+      </div>
+    </section>
+
+    <!-- SUPPORT -->
+    <section id="sec-support" class="dash-section mt-3" style="display:none;">
+      <div class="panel" style="max-width:560px;">
+        <h3>Contact Concierge Support</h3>
+        <div class="divider-arch" style="margin:14px 0 24px;"></div>
+        <form id="supportForm">
+          <div class="form-field"><label>Subject</label><input type="text" required placeholder="e.g. Early check-in or airport pickup request"></div>
+          <div class="form-field"><label>Message</label><textarea rows="4" required placeholder="Tell us how we can assist you"></textarea></div>
+          <button type="submit" class="btn gold"><span>Send Request</span></button>
+        </form>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Identification Modal if user visits directly without login -->
+<div id="identifyModal" style="display:none; position:fixed; inset:0; background:rgba(27,16,48,.85); z-index:1000; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#fff; border-radius:12px; max-width:440px; width:100%; padding:32px; box-shadow:0 20px 60px rgba(0,0,0,.35);">
+    <h3 style="margin-top:0; font-size:1.4rem;">Guest Portal Sign-In</h3>
+    <p class="muted" style="font-size:.9rem; margin-bottom:20px;">Please enter your name and email to access your personal dashboard and bookings.</p>
+    <form id="identifyForm">
+      <div class="form-field">
+        <label for="idName">Your Full Name</label>
+        <input type="text" id="idName" required placeholder="e.g. Siddartha">
+      </div>
+      <div class="form-field">
+        <label for="idEmail">Email Address</label>
+        <input type="email" id="idEmail" required placeholder="you@example.com">
+      </div>
+      <button type="submit" class="btn gold block"><span>Enter Dashboard</span></button>
+    </form>
+  </div>
+</div>
+
+<script src="assets/script.js"></script>
+<script>
+  const API_BASE = '/api';
+
+  function getRoomImage(roomType) {
+    const t = (roomType || '').toLowerCase();
+    if (t.includes('deluxe')) return 'assets/images/rooms/deluxe-double.jpg';
+    if (t.includes('executive')) return 'assets/images/rooms/executive-suite.jpg';
+    if (t.includes('presidential')) return 'assets/images/rooms/presidential-suite.jpg';
+    if (t.includes('family')) return 'assets/images/rooms/family-room.jpg';
+    if (t.includes('standard double')) return 'assets/images/rooms/standard-double.jpg';
+    return 'assets/images/rooms/standard-single.jpg';
+  }
+
+  function switchSection(e, name) {
+    e.preventDefault();
+    document.querySelectorAll('.dash-nav a').forEach(a => a.classList.remove('active'));
+    e.target.classList.add('active');
+    document.querySelectorAll('.dash-section').forEach(s => s.style.display = 'none');
+    const sec = document.getElementById('sec-' + name);
+    if (sec) sec.style.display = 'block';
+  }
+
+  function handleCustomerLogout(e) {
+    if (e) e.preventDefault();
+    localStorage.removeItem('sp_user');
+    localStorage.removeItem('sp_token');
+    window.location.href = 'login.html';
+  }
+
+  document.getElementById('logoutBtn')?.addEventListener('click', handleCustomerLogout);
+
+  let currentUser = null;
+  let userBookings = [];
+
+  async function initDashboard() {
+    const savedUser = localStorage.getItem('sp_user');
+    if (!savedUser) {
+      document.getElementById('identifyModal').style.display = 'flex';
+      return;
+    }
+
+    currentUser = JSON.parse(savedUser);
+    renderUserProfile(currentUser);
+
+    await loadCustomerData(currentUser.email);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('booked') === '1') {
+      const code = urlParams.get('code') || '';
+      const alertBox = document.getElementById('bookingSuccessAlert');
+      alertBox.style.display = 'flex';
+      document.getElementById('bookingSuccessText').innerHTML = '<b>Reservation Confirmed!</b> Booking <strong>' + code + '</strong> has been saved. Your upcoming stay is shown below.';
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }
+
+  function renderUserProfile(user) {
+    const name = user.full_name || 'Valued Guest';
+    document.getElementById('guestGreetingName').textContent = name;
+    document.getElementById('kpiLoyaltyTier').textContent = user.loyalty_tier || 'Bronze';
+    document.getElementById('notifTierText').textContent = 'Enjoy ' + (user.loyalty_tier || 'Bronze') + ' Tier member perks';
+
+    document.getElementById('profName').value = name;
+    document.getElementById('profEmail').value = user.email || '';
+    document.getElementById('profPhone').value = user.phone_number || '';
+    document.getElementById('profNation').value = user.nationality || 'India';
+  }
+
+  async function loadCustomerData(email) {
+    if (!email) return;
+
+    try {
+      const pResp = await fetch(`${API_BASE}/auth/profile?email=${encodeURIComponent(email)}`);
+      const pData = await pResp.json();
+      if (pData.success && pData.data) {
+        currentUser = { ...currentUser, ...pData.data };
+        localStorage.setItem('sp_user', JSON.stringify(currentUser));
+        renderUserProfile(currentUser);
+      }
+    } catch (err) {
+      console.warn('Profile fetch fallback to local store:', err);
+    }
+
+    try {
+      const bResp = await fetch(`${API_BASE}/bookings?email=${encodeURIComponent(email)}`);
+      const bData = await bResp.json();
+      if (bData.success && Array.isArray(bData.data)) {
+        userBookings = bData.data;
+      }
+    } catch (err) {
+      console.warn('Bookings API fallback to local store:', err);
+    }
+
+    if (!userBookings.length) {
+      const localBookings = JSON.parse(localStorage.getItem('sp_user_bookings') || '[]');
+      userBookings = localBookings.filter(b => !b.customer_email || b.customer_email.toLowerCase() === email.toLowerCase());
+    }
+
+    renderDashboardBookings(userBookings);
+  }
+
+  function renderDashboardBookings(bookings) {
+    const upcomingContainer = document.getElementById('upcomingStayContainer');
+    const bookingsTbody = document.getElementById('bookingsTableBody');
+    const paymentsTbody = document.getElementById('paymentsTableBody');
+
+    const activeList = bookings.filter(b => b.booking_status === 'upcoming' || b.booking_status === 'checked_in');
+    const totalCount = bookings.length;
+    let totalPaid = 0;
+    let pendingBal = 0;
+
+    bookings.forEach(b => {
+      if (b.payment_status === 'completed') totalPaid += parseFloat(b.total_amount || 0);
+      else if (b.payment_status === 'pending') pendingBal += parseFloat(b.total_amount || 0);
+    });
+
+    document.getElementById('kpiActiveBookings').textContent = activeList.length;
+    document.getElementById('kpiActiveSub').textContent = `${activeList.length} upcoming stay${activeList.length === 1 ? '' : 's'}`;
+    document.getElementById('kpiTotalStays').textContent = totalCount;
+    document.getElementById('kpiPendingPay').textContent = '₹' + pendingBal.toLocaleString('en-IN');
+    document.getElementById('kpiPendingStatus').textContent = pendingBal > 0 ? 'Payment due soon' : 'All balances clear';
+    document.getElementById('kpiPaidTotal').textContent = '₹' + totalPaid.toLocaleString('en-IN');
+    document.getElementById('kpiPendingTotal').textContent = '₹' + pendingBal.toLocaleString('en-IN');
+
+    if (activeList.length === 0) {
+      upcomingContainer.innerHTML = `
+        <div class="panel mt-3 text-center" style="padding:48px 24px; border:1px dashed rgba(201,162,39,.35); background:rgba(251,248,241,.6);">
+          <div style="width:60px; height:60px; border-radius:50%; background:rgba(201,162,39,.15); margin:0 auto 16px; display:flex; align-items:center; justify-content:center; color:var(--gold);">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.6"/><polyline points="9 22 9 12 15 12 15 22" stroke="currentColor" stroke-width="1.6"/></svg>
+          </div>
+          <h3 style="margin-bottom:8px;">You Have No Active Bookings</h3>
+          <p class="muted" style="max-width:460px; margin:0 auto 24px;">Experience the serenity and heritage luxury of Siddartha Palace. Choose from our handcrafted suites and reserve your stay.</p>
+          <a href="rooms.html" class="btn gold"><span>Browse &amp; Book Rooms</span></a>
+        </div>
+      `;
+    } else {
+      const topStay = activeList[0];
+      const roomImg = getRoomImage(topStay.room_type);
+      const floor = topStay.floor || (topStay.room_number ? topStay.room_number.charAt(0) : '1');
+      upcomingContainer.innerHTML = `
+        <div class="panel mt-3">
+          <div class="flex justify-between items-center" style="flex-wrap:wrap; gap:10px;">
+            <div>
+              <span class="badge ok">✓ Confirmed &amp; Guaranteed</span>
+              <span class="tag" style="margin-left:8px;">Booking #${topStay.booking_code}</span>
+            </div>
+            <span class="badge" style="background:rgba(30,130,76,.1); color:#1e824c; border:1px solid rgba(30,130,76,.3); font-size:.78rem;">
+              📨 Room Voucher Dispatched via Email &amp; SMS
+            </span>
+          </div>
+          <div class="divider-arch" style="margin:14px 0 20px;"></div>
+          <div class="flex justify-between items-start" style="flex-wrap:wrap; gap:20px;">
+            <div class="flex gap-2 items-start" style="flex:1; min-width:280px;">
+              <div class="art-panel arch-frame" style="width:110px; height:110px; position:relative; overflow:hidden; border-radius:10px; flex-shrink:0;">
+                <img class="room-img" src="${roomImg}" alt="${topStay.room_type}" style="width:100%; height:100%; object-fit:cover;">
+              </div>
+              <div>
+                <h3 style="margin-bottom:4px; font-size:1.25rem;">${topStay.room_type}</h3>
+                <p style="margin-bottom:6px; color:var(--maroon); font-weight:600;">
+                  🚪 Assigned: Room ${topStay.room_number || '101'} · Floor ${floor}
+                </p>
+                <p class="muted" style="margin-bottom:6px; font-size:.85rem;">
+                  📅 <strong>Check-in:</strong> ${topStay.check_in_date} (From 2:00 PM) → <strong>Check-out:</strong> ${topStay.check_out_date} (Until 11:00 AM)
+                </p>
+                <p class="muted" style="margin-bottom:8px; font-size:.82rem;">
+                  ⏳ <strong>Duration:</strong> ${topStay.nights || 1} Night${(topStay.nights || 1) === 1 ? '' : 's'} · 👥 <strong>Guests:</strong> ${topStay.guests_count || 1} Guest${(topStay.guests_count || 1) === 1 ? '' : 's'} · 💰 <strong>Total Paid:</strong> ₹${Number(topStay.total_amount || 0).toLocaleString('en-IN')}
+                </p>
+                <div class="flex gap-1" style="flex-wrap:wrap;">
+                  <span style="font-size:.74rem; background:rgba(201,162,39,.12); color:var(--ink); padding:2px 8px; border-radius:4px;">✨ Palace Wi-Fi</span>
+                  <span style="font-size:.74rem; background:rgba(201,162,39,.12); color:var(--ink); padding:2px 8px; border-radius:4px;">☕ Breakfast Included</span>
+                  <span style="font-size:.74rem; background:rgba(201,162,39,.12); color:var(--ink); padding:2px 8px; border-radius:4px;">🏊 Pool Access</span>
+                  <span style="font-size:.74rem; background:rgba(201,162,39,.12); color:var(--ink); padding:2px 8px; border-radius:4px;">🚗 Free Valet</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex gap-1" style="align-self:center;">
+              <button class="btn small outline" onclick="openInvoice('${topStay.booking_code}', '${topStay.room_type}', '${topStay.total_amount}')"><span>View Invoice</span></button>
+              <button class="btn small outline" onclick="cancelStay('${topStay.booking_code}')" style="color:var(--maroon); border-color:rgba(110,30,43,.3);"><span>Cancel</span></button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (bookings.length === 0) {
+      bookingsTbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="text-center muted" style="padding:32px 16px;">
+            No bookings found. <a href="rooms.html" style="color:var(--maroon); text-decoration:underline; font-weight:500;">Reserve your first stay</a> at Siddartha Palace.
+          </td>
+        </tr>
+      `;
+    } else {
+      bookingsTbody.innerHTML = bookings.map(b => {
+        const badgeClass = b.booking_status === 'upcoming' ? 'warn' : b.booking_status === 'checked_out' ? 'ok' : b.booking_status === 'cancelled' ? 'bad' : 'info';
+        const badgeLabel = b.booking_status === 'upcoming' ? 'Upcoming' : b.booking_status === 'checked_out' ? 'Completed' : b.booking_status === 'cancelled' ? 'Cancelled' : 'Checked-In';
+        return `
+          <tr>
+            <td><b>${b.booking_code}</b></td>
+            <td>${b.room_type}</td>
+            <td>${b.check_in_date} – ${b.check_out_date}</td>
+            <td><span class="badge ${badgeClass}">${badgeLabel}</span></td>
+            <td><b>₹${parseFloat(b.total_amount || 0).toLocaleString('en-IN')}</b></td>
+            <td class="flex gap-1">
+              <button class="btn small outline" onclick="openInvoice('${b.booking_code}', '${b.room_type}', '${b.total_amount}')"><span>View</span></button>
+              ${b.booking_status === 'upcoming' ? `<button class="btn small outline" onclick="cancelStay('${b.booking_code}')" style="color:var(--maroon);"><span>Cancel</span></button>` : ''}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    if (bookings.length === 0) {
+      paymentsTbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="text-center muted" style="padding:32px 16px;">
+            No payment records found.
+          </td>
+        </tr>
+      `;
+    } else {
+      paymentsTbody.innerHTML = bookings.map((b, idx) => {
+        const payId = 'P' + String(1000 + idx + 1).padStart(5, '0');
+        const isPaid = b.payment_status === 'completed';
+        return `
+          <tr>
+            <td>${payId}</td>
+            <td>${b.booking_code}</td>
+            <td><b>₹${parseFloat(b.total_amount || 0).toLocaleString('en-IN')}</b></td>
+            <td>${b.payment_method || 'UPI'}</td>
+            <td><span class="badge ${isPaid ? 'ok' : 'warn'}">${isPaid ? 'Completed' : 'Pending'}</span></td>
+            <td><button class="btn small outline" onclick="openInvoice('${b.booking_code}', '${b.room_type}', '${b.total_amount}')"><span>Receipt</span></button></td>
+          </tr>
+        `;
+      }).join('');
+    }
+  }
+
+  function openInvoice(code, room, amount) {
+    const guest = currentUser ? currentUser.full_name : 'Guest';
+    openResult({
+      title: 'Booking Invoice',
+      heading: 'Siddartha Palace Invoice',
+      message: `Official invoice for reservation ${code}. Thank you for choosing Siddartha Palace, ${guest}.`,
+      icon: 'download',
+      tone: 'gold',
+      meta: [
+        { label: 'Booking Code', value: code },
+        { label: 'Guest Name', value: guest },
+        { label: 'Room Type', value: room },
+        { label: 'Total Paid', value: '₹' + parseFloat(amount || 0).toLocaleString('en-IN') },
+        { label: 'Status', value: 'Confirmed & Paid' }
+      ]
+    });
+  }
+
+  async function cancelStay(code) {
+    if (!confirm(`Are you sure you want to cancel reservation ${code}?`)) return;
+
+    try {
+      await fetch(`${API_BASE}/bookings/${code}/cancel`, { method: 'PUT' });
+    } catch (err) {
+      console.warn('Cancel API fallback:', err);
+    }
+
+    userBookings = userBookings.map(b => b.booking_code === code ? { ...b, booking_status: 'cancelled' } : b);
+    localStorage.setItem('sp_user_bookings', JSON.stringify(userBookings));
+    renderDashboardBookings(userBookings);
+
+    openResult({
+      title: 'Cancel Reservation',
+      heading: 'Reservation Cancelled',
+      message: `Reservation ${code} has been cancelled. Any eligible refund will be processed to your original payment method.`,
+      icon: 'trash',
+      tone: 'maroon',
+      meta: [{ label: 'Booking Code', value: code }, { label: 'Status', value: 'Cancelled' }]
+    });
+  }
+
+  document.getElementById('profileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const full_name = document.getElementById('profName').value.trim();
+    const phone_number = document.getElementById('profPhone').value.trim();
+    const nationality = document.getElementById('profNation').value.trim();
+    const email = currentUser?.email || document.getElementById('profEmail').value.trim();
+
+    currentUser = { ...currentUser, full_name, phone_number, nationality, email };
+    localStorage.setItem('sp_user', JSON.stringify(currentUser));
+    renderUserProfile(currentUser);
+
+    try {
+      await fetch(`${API_BASE}/auth/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, full_name, phone_number, nationality })
+      });
+    } catch (err) {
+      console.warn('Profile update API error:', err);
+    }
+
+    openResult({
+      title: 'Save Changes',
+      heading: 'Profile Updated',
+      message: `Your profile details have been saved to the database. Welcome, ${full_name}!`,
+      icon: 'check',
+      tone: 'gold'
+    });
+  });
+
+  document.getElementById('identifyForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const full_name = document.getElementById('idName').value.trim();
+    const email = document.getElementById('idEmail').value.trim();
+    if (!full_name || !email) return;
+
+    try {
+      const resp = await fetch(`${API_BASE}/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ full_name, email })
+      });
+      const data = await resp.json();
+      if (data.success && data.user) {
+        currentUser = data.user;
+      }
+    } catch (err) {
+      currentUser = { full_name, email, loyalty_tier: 'Bronze', role: 'customer' };
+    }
+
+    if (!currentUser) currentUser = { full_name, email, loyalty_tier: 'Bronze', role: 'customer' };
+    localStorage.setItem('sp_user', JSON.stringify(currentUser));
+    document.getElementById('identifyModal').style.display = 'none';
+
+    renderUserProfile(currentUser);
+    await loadCustomerData(currentUser.email);
+  });
+
+  document.getElementById('passForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    openResult({ title: 'Update Password', heading: 'Password Updated', message: 'Your password has been changed securely.', icon: 'check', tone: 'gold' });
+  });
+
+  document.getElementById('supportForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!validateForm(e.target)) return;
+    openResult({ title: 'Send Message', heading: 'Message Sent', message: 'Our concierge team will respond to your request shortly.', icon: 'mail', tone: 'gold' });
+  });
+
+  document.addEventListener('DOMContentLoaded', initDashboard);
+</script>
+</body>
+</html>

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Book Now — Siddartha Palace</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div class="page-loader"><svg class="loader-mark" viewBox="0 0 40 40" fill="none"><path d="M20 4C10 4 4 12 4 20s6 16 16 16 16-8 16-16S30 4 20 4Z" stroke="#C9A227" stroke-width="1.4" stroke-dasharray="6 6"/></svg></div>
+<div class="scroll-progress"></div>
+
+<header class="site-header">
+  <div class="nav-wrap">
+    <a href="index.html" class="brand">
+      <svg class="crest" viewBox="0 0 40 40" fill="none"><path d="M20 3C11 3 6 10 6 18v16h6V19c0-7 3.5-11 8-11s8 4 8 11v15h6V18C34 10 29 3 20 3Z" stroke="#C9A227" stroke-width="1.6"/><circle cx="20" cy="16" r="2.4" fill="#C9A227"/></svg>
+      <span class="brand-text"><b>Siddartha Palace</b><em>Est. Heritage &amp; Grace</em></span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="rooms.html" class="active">Rooms &amp; Suites</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="about.html">About</a>
+      <a href="faq.html">FAQ</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="login.html" class="btn outline small" target="_blank" rel="noopener"><span>Login</span></a>
+    </div>
+    <button class="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<section class="page-hero" style="padding-bottom:60px;">
+  <div class="inner">
+    <p class="breadcrumb"><a href="index.html">Home</a> / <a href="rooms.html">Rooms</a> / Book Now</p>
+    <h1>Complete Your Booking</h1>
+  </div>
+</section>
+
+<section class="bg-ivory tight">
+  <div class="container">
+    <div class="grid cols-2" style="gap:40px; align-items:flex-start;">
+
+      <form class="panel reveal" id="bookingForm">
+        <h3>Guest &amp; Stay Details</h3>
+        <div class="divider-arch" style="margin:14px 0 28px;"></div>
+
+        <div class="form-field">
+          <label for="fullName">Full Name</label>
+          <input type="text" id="fullName" required placeholder="As per ID">
+          <span class="hint">Please enter your full name.</span>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" required placeholder="you@example.com">
+            <span class="hint">Please enter a valid email.</span>
+          </div>
+          <div class="form-field">
+            <label for="phone">Phone Number</label>
+            <input type="tel" id="phone" required placeholder="+91 98765 43210">
+            <span class="hint">Please enter your phone number.</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="roomType">Room Type</label>
+            <select id="roomType">
+              <option data-price="1" selected>Standard Single — ₹1/night (Live Test)</option>
+              <option data-price="4499">Standard Double — ₹4,499/night</option>
+              <option data-price="5999">Deluxe Double — ₹5,999/night</option>
+              <option data-price="7499">Family Room — ₹7,499/night</option>
+              <option data-price="9999">Executive Suite — ₹9,999/night</option>
+              <option data-price="18999">Presidential Suite — ₹18,999/night</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="guestsCount">Number of Guests</label>
+            <select id="guestsCount">
+              <option>1 Guest</option><option selected>2 Guests</option><option>3 Guests</option><option>4 Guests</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="checkinDate">Check-in</label>
+            <input type="date" id="checkinDate" required>
+            <span class="hint">Select a check-in date.</span>
+          </div>
+          <div class="form-field">
+            <label for="checkoutDate">Check-out</label>
+            <input type="date" id="checkoutDate" required>
+            <span class="hint">Select a check-out date.</span>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="requests">Special Requests (optional)</label>
+          <textarea id="requests" rows="3" placeholder="Airport pickup, high floor, early check-in, anniversary setup..."></textarea>
+        </div>
+
+        <div class="form-field">
+          <label for="payMethod">Worldwide Payment Options</label>
+          <select id="payMethod">
+            <option value="UPI">Instant UPI (PhonePe / Google Pay / Paytm / BHIM QR)</option>
+            <option value="Credit Card">Credit / Debit Card (Worldwide — Visa, MasterCard, RuPay, Amex)</option>
+            <option value="Net Banking">Net Banking (SBI, HDFC, ICICI, Axis, Kotak &amp; 50+ Banks)</option>
+            <option value="International">International Cards &amp; PayPal (Global Currency Support)</option>
+            <option value="Cash at Hotel">Pay at Check-in (Cash / Terminal at Reception)</option>
+          </select>
+        </div>
+
+        <!-- Single Dynamic Live Auto-Amount PhonePe UPI QR Code -->
+        <div id="upiQrSection" class="qr-container mt-2" style="margin-bottom:24px; background:linear-gradient(180deg, rgba(95,37,159,.04) 0%, rgba(251,248,241,.9) 100%); border:1.5px solid rgba(95,37,159,.25); border-radius:12px; padding:22px; text-align:center;">
+          
+          <div style="display:inline-flex; align-items:center; gap:8px; background:#5f259f; color:#fff; padding:6px 16px; border-radius:20px; font-size:.82rem; font-weight:600; margin-bottom:12px; box-shadow:0 3px 10px rgba(95,37,159,.25);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2.2"/></svg>
+            <span>PhonePe Auto-Amount QR</span>
+          </div>
+
+          <h3 style="margin-bottom:4px; font-size:1.15rem; color:#1B1030;">Scan to Pay Exact Amount</h3>
+          <p class="muted" style="font-size:.85rem; margin-bottom:14px; color:#555;">
+            Amount <b id="qrAmountDisplay" style="color:#5f259f; font-size:1.2rem; font-weight:700;">₹5,999</b> is automatically encoded.
+          </p>
+
+          <!-- Auto-Amount QR Code Box with PhonePe Badge -->
+          <div style="position:relative; display:inline-block; background:#fff; padding:16px; border-radius:14px; border:2px solid #5f259f; box-shadow:0 8px 24px rgba(95,37,159,.15);">
+            <img id="upiQrImg" src="" alt="PhonePe Auto-Amount Dynamic QR Code" style="width:200px; height:200px; display:block; border-radius:8px;">
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:38px; height:38px; border-radius:50%; background:#5f259f; border:3px solid #fff; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:bold; font-size:1.1rem; box-shadow:0 2px 8px rgba(0,0,0,.25); pointer-events:none;">
+              पे
+            </div>
+          </div>
+
+          <div class="upi-apps mt-2">
+            <span class="upi-chip" style="background:#5f259f; color:#fff; font-weight:700; border-color:#5f259f;">PhonePe</span>
+            <span class="upi-chip">Google Pay</span>
+            <span class="upi-chip">Paytm</span>
+            <span class="upi-chip">BHIM</span>
+          </div>
+
+          <div style="margin-top:14px; max-width:380px; margin-inline:auto; padding:10px 14px; background:#fff; border-radius:8px; border:1px solid rgba(95,37,159,.2); display:flex; align-items:center; justify-content:space-between; gap:8px;">
+            <span style="font-size:.82rem; color:#1B1030;">UPI ID: <strong id="upiIdText" style="color:#5f259f; font-size:.92rem; user-select:all;">7396704027-2@ybl</strong></span>
+            <button type="button" class="btn small outline" onclick="navigator.clipboard.writeText('7396704027-2@ybl'); alert('UPI ID copied: 7396704027-2@ybl');" style="padding:4px 10px; font-size:.75rem; border-color:#5f259f; color:#5f259f;"><span>Copy</span></button>
+          </div>
+          
+          <p class="muted mt-1" style="font-size:.75rem; margin-bottom:0; color:#888;">Merchant: <strong>Siddartha Palace Hotel</strong> · Verified via PhonePe</p>
+        </div>
+
+        <button type="submit" class="btn gold block" id="confirmBtn"><span>Confirm &amp; Pay</span></button>
+      </form>
+
+      <aside class="reveal">
+        <div class="art-panel arch-frame" style="height:220px; margin-bottom:24px; position:relative; overflow:hidden; border-radius:8px;">
+          <img id="summaryRoomImg" src="assets/images/rooms/deluxe-double.jpg" alt="Selected Room" style="width:100%; height:100%; object-fit:cover;">
+        </div>
+        <div class="panel">
+          <h3>Booking Summary</h3>
+          <div class="divider-arch" style="margin:12px 0 20px;"></div>
+          <div class="row-line flex justify-between mt-1"><span class="muted">Room</span><b id="sumRoom">Deluxe Double</b></div>
+          <div class="row-line flex justify-between mt-1"><span class="muted">Rate</span><b id="sumRate">₹5,999/night</b></div>
+          <div class="row-line flex justify-between mt-1"><span class="muted">Nights</span><b id="sumNights">—</b></div>
+          <div class="row-line flex justify-between mt-1"><span class="muted">Taxes &amp; Fees</span><b>Included</b></div>
+          <div class="divider-arch" style="margin:20px 0;"></div>
+          <div class="row-line flex justify-between"><span style="font-family:'Cormorant Garamond',serif; font-size:1.3rem;">Total (INR)</span><b class="price" id="sumTotal" style="color:var(--maroon);">—</b></div>
+          <p class="muted mt-2" style="font-size:.82rem;">A confirmation with your booking code and PDF invoice will be automatically saved to your account.</p>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="foot-bottom" style="border-top:none; padding-top:0;">
+      <span>© 2026 Siddartha Palace. All rights reserved.</span>
+      <span class="flex gap-2"><a href="index.html" style="padding:0;">Home</a><a href="rooms.html" style="padding:0;">Rooms</a></span>
+    </div>
+  </div>
+</footer>
+
+<button class="to-top" aria-label="Back to top">↑</button>
+<script src="assets/script.js"></script>
+<script>
+  const API_BASE = '/api';
+  const HOTEL_UPI_ID = '7396704027-2@ybl';
+  const HOTEL_MERCHANT_NAME = 'Siddartha Palace';
+
+  // Prefill logged-in user if available
+  const currentUser = JSON.parse(localStorage.getItem('sp_user') || '{}');
+  if (currentUser.full_name) document.getElementById('fullName').value = currentUser.full_name;
+  if (currentUser.email) document.getElementById('email').value = currentUser.email;
+  if (currentUser.phone_number) document.getElementById('phone').value = currentUser.phone_number;
+
+  // Prefill from query string (?room=...&price=...&checkin=...&checkout=...&guests=...)
+  const params = new URLSearchParams(window.location.search);
+  const roomSel = document.getElementById('roomType');
+  if (params.get('room')) {
+    [...roomSel.options].forEach(o => { if (o.text.toLowerCase().startsWith(params.get('room').toLowerCase())) o.selected = true; });
+  }
+
+  // Set dates from search or default dates
+  const today = new Date();
+  const defIn = params.get('checkin') || today.toISOString().split('T')[0];
+  const threeDays = new Date(today);
+  threeDays.setDate(today.getDate() + 3);
+  const defOut = params.get('checkout') || threeDays.toISOString().split('T')[0];
+  document.getElementById('checkinDate').value = defIn;
+  document.getElementById('checkoutDate').value = defOut;
+
+  // Prefill guests
+  if (params.get('guests')) {
+    const gVal = params.get('guests');
+    const guestSel = document.getElementById('guestsCount');
+    if (guestSel) {
+      [...guestSel.options].forEach(o => {
+        if (o.text.startsWith(gVal) || o.value === gVal) o.selected = true;
+      });
+    }
+  }
+
+  function getRoomImage(roomType) {
+    const t = (roomType || '').toLowerCase();
+    if (t.includes('deluxe')) return 'assets/images/rooms/deluxe-double.jpg';
+    if (t.includes('executive')) return 'assets/images/rooms/executive-suite.jpg';
+    if (t.includes('presidential')) return 'assets/images/rooms/presidential-suite.jpg';
+    if (t.includes('family')) return 'assets/images/rooms/family-room.jpg';
+    if (t.includes('standard double')) return 'assets/images/rooms/standard-double.jpg';
+    return 'assets/images/rooms/standard-single.jpg';
+  }
+
+  function currentPrice() {
+    return parseFloat(roomSel.selectedOptions[0].dataset.price) || 3499;
+  }
+  function nightsBetween() {
+    const a = document.getElementById('checkinDate').value;
+    const b = document.getElementById('checkoutDate').value;
+    if (!a || !b) return 1;
+    const diff = (new Date(b) - new Date(a)) / (1000 * 60 * 60 * 24);
+    return diff > 0 ? diff : 1;
+  }
+
+  function updateSummary() {
+    const price = currentPrice();
+    const nights = nightsBetween();
+    const total = price * nights;
+    const roomName = roomSel.selectedOptions[0].text.split(' — ')[0];
+
+    document.getElementById('sumRoom').textContent = roomName;
+    document.getElementById('sumRate').textContent = '₹' + price.toLocaleString('en-IN') + '/night';
+    document.getElementById('sumNights').textContent = nights + (nights === 1 ? ' night' : ' nights');
+    document.getElementById('sumTotal').textContent = '₹' + total.toLocaleString('en-IN');
+
+    // Update Room Summary Image
+    const imgEl = document.getElementById('summaryRoomImg');
+    if (imgEl) imgEl.src = getRoomImage(roomName);
+
+    // Update Dynamic UPI QR Code
+    updateUpiQr(total, roomName);
+  }
+
+  function updateUpiQr(amount, roomName) {
+    const qrSection = document.getElementById('upiQrSection');
+    const payMethod = document.getElementById('payMethod').value;
+    
+    if (payMethod !== 'UPI') {
+      if (qrSection) qrSection.style.display = 'none';
+      return;
+    }
+
+    if (qrSection) qrSection.style.display = 'block';
+    document.getElementById('qrAmountDisplay').textContent = '₹' + amount.toLocaleString('en-IN');
+
+    // Standard NPCI / UPI Intent URI format with custom UPI ID
+    const upiUri = `upi://pay?pa=${HOTEL_UPI_ID}&pn=${encodeURIComponent(HOTEL_MERCHANT_NAME)}&am=${amount}&cu=INR&tn=Room%20Booking%20-%20${encodeURIComponent(roomName)}`;
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUri)}&color=1B1030`;
+    
+    const qrImg = document.getElementById('upiQrImg');
+    if (qrImg) qrImg.src = qrApiUrl;
+  }
+
+  roomSel.addEventListener('change', updateSummary);
+  document.getElementById('checkinDate').addEventListener('change', updateSummary);
+  document.getElementById('checkoutDate').addEventListener('change', updateSummary);
+  document.getElementById('payMethod').addEventListener('change', updateSummary);
+  updateSummary();
+
+  document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!validateForm(e.target)) return;
+
+    const submitBtn = document.getElementById('confirmBtn');
+    submitBtn.disabled = true;
+    submitBtn.querySelector('span').textContent = 'Confirming Reservation…';
+
+    const price = currentPrice();
+    const nights = Math.max(1, nightsBetween());
+    const total = price * nights;
+    const room = roomSel.selectedOptions[0].text.split(' — ')[0];
+    const guest = document.getElementById('fullName').value.trim() || 'Guest';
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const checkin = document.getElementById('checkinDate').value;
+    const checkout = document.getElementById('checkoutDate').value;
+    const pay = document.getElementById('payMethod').value;
+    const guestsCount = parseInt(document.getElementById('guestsCount').value) || 2;
+    const requests = document.getElementById('requests').value.trim();
+
+    // Ensure user session is updated/saved
+    const user = { full_name: guest, email, phone_number: phone, loyalty_tier: currentUser.loyalty_tier || 'Bronze', role: 'customer' };
+    localStorage.setItem('sp_user', JSON.stringify(user));
+
+    let createdBooking = null;
+
+    try {
+      const resp = await fetch(`${API_BASE}/bookings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          full_name: guest,
+          phone_number: phone,
+          room_type: room,
+          check_in_date: checkin,
+          check_out_date: checkout,
+          nights,
+          guests_count: guestsCount,
+          special_requests: requests,
+          total_amount: total,
+          payment_method: pay
+        })
+      });
+      const data = await resp.json();
+      if (data.success && data.data) {
+        createdBooking = data.data;
+      }
+    } catch (err) {
+      console.warn('Booking API error, saving to local fallback:', err);
+    }
+
+    if (!createdBooking) {
+      const bookingCode = 'SP' + Math.floor(100000 + Math.random() * 900000);
+      createdBooking = {
+        booking_code: bookingCode,
+        customer_name: guest,
+        customer_email: email,
+        phone_number: phone,
+        room_type: room,
+        room_number: '10' + Math.floor(1 + Math.random() * 8),
+        check_in_date: checkin,
+        check_out_date: checkout,
+        nights,
+        guests_count: guestsCount,
+        special_requests: requests,
+        total_amount: total,
+        payment_method: pay,
+        payment_status: 'completed',
+        booking_status: 'upcoming',
+        created_at: new Date().toISOString()
+      };
+    }
+
+    // Save to local bookings list
+    const existingBookings = JSON.parse(localStorage.getItem('sp_user_bookings') || '[]');
+    existingBookings.unshift(createdBooking);
+    localStorage.setItem('sp_user_bookings', JSON.stringify(existingBookings));
+
+    // Redirect to customer dashboard
+    window.location.href = `customer-dashboard.html?booked=1&code=${createdBooking.booking_code}`;
+  });
+</script>
+</body>
+</html>

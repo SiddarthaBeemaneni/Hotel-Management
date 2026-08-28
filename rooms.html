@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Rooms &amp; Suites — Siddartha Palace</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div class="page-loader"><svg class="loader-mark" viewBox="0 0 40 40" fill="none"><path d="M20 4C10 4 4 12 4 20s6 16 16 16 16-8 16-16S30 4 20 4Z" stroke="#C9A227" stroke-width="1.4" stroke-dasharray="6 6"/></svg></div>
+<div class="scroll-progress"></div>
+
+<header class="site-header">
+  <div class="nav-wrap">
+    <a href="index.html" class="brand">
+      <svg class="crest" viewBox="0 0 40 40" fill="none"><path d="M20 3C11 3 6 10 6 18v16h6V19c0-7 3.5-11 8-11s8 4 8 11v15h6V18C34 10 29 3 20 3Z" stroke="#C9A227" stroke-width="1.6"/><circle cx="20" cy="16" r="2.4" fill="#C9A227"/></svg>
+      <span class="brand-text"><b>Siddartha Palace</b><em>Est. Heritage &amp; Grace</em></span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="rooms.html" class="active">Rooms &amp; Suites</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="about.html">About</a>
+      <a href="faq.html">FAQ</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="login.html" class="btn outline small" target="_blank" rel="noopener"><span>Login</span></a>
+      <a href="booking.html" class="btn gold small" target="_blank" rel="noopener"><span>Book Now</span></a>
+    </div>
+    <button class="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<section class="page-hero palace-room-hero">
+  <div class="inner" style="position:relative; z-index:5;">
+    <p class="breadcrumb"><a href="index.html">Home</a> / Rooms &amp; Suites</p>
+    <h1>Rooms &amp; Suites</h1>
+    <p class="lede" style="max-width:560px; color:rgba(247,240,224,.85);">Search by dates, filter by room type, and book instantly — every rate shown is per night, taxes included.</p>
+  </div>
+
+  <!-- Interactive Hanging Palace Chandelier & Edison Bulb Installation -->
+  <div class="palace-light-installation" id="palaceLightApp">
+    <div class="chandelier-hanging-unit">
+      <div class="chandelier-ceiling-plate"></div>
+      <div class="chandelier-cord"></div>
+      <div class="chandelier-fixture">
+        <div class="brass-socket">
+          <div class="brass-groove"></div>
+        </div>
+        
+        <!-- Vintage Edison Glass Bulb with Filament -->
+        <div class="edison-bulb" id="edisonBulb" role="button" tabindex="0" title="Click to toggle Palace Lights" aria-label="Toggle Palace Room Illumination">
+          <div class="glass-dome">
+            <div class="filament-stem"></div>
+            <div class="filament-loop loop-1"></div>
+            <div class="filament-loop loop-2"></div>
+            <div class="filament-loop loop-3"></div>
+          </div>
+          <div class="bulb-halo"></div>
+          <div class="bulb-light-burst"></div>
+        </div>
+
+        <!-- Hanging Pull Chain with Brass Tassel -->
+        <div class="pull-chain-wrap" id="pullChainWrap" role="button" tabindex="0" title="Pull cord to switch on lights">
+          <div class="chain-line"></div>
+          <div class="chain-bead"></div>
+          <div class="pull-tassel">
+            <svg width="18" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2v14m-5 0l5 6 5-6H7z" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Callout / Guide Badge -->
+      <div class="light-prompt-badge" id="lightPromptBadge">
+        <span class="prompt-icon">💡</span>
+        <div class="prompt-text">
+          <b id="promptTitle">Palace Chamber in Total Darkness</b>
+          <span id="promptSubtitle">Click the glowing bulb or pull the golden cord to turn ON the lights &amp; reveal all room suites!</span>
+        </div>
+        <button type="button" class="btn small gold" id="quickLightBtn" style="padding:10px 20px; font-size:.88rem; white-space:nowrap; flex-shrink:0; cursor:pointer;">
+          <span id="quickLightBtnText">Turn ON Lights</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="bg-ivory tight palace-chambers-section" id="roomsShowcaseWrapper">
+  <!-- Full-Page Darkness Shroud (Active when customer opens the page) -->
+  <div class="palace-blackout-shroud" id="palaceBlackoutShroud">
+    <div class="blackout-spotlight-glow"></div>
+    <div class="blackout-message-card">
+      <div class="blackout-bulb-icon">💡</div>
+      <h3>The Palace Chambers are in the Dark</h3>
+      <p>Click the glowing vintage bulb above or click the button below to turn ON the palace lights and reveal all room suites, photography, amenities, and rates.</p>
+      <button type="button" class="btn gold" id="blackoutTurnOnBtn" style="padding:12px 28px; font-size:.92rem; margin-top:8px;">
+        <span>💡 Turn ON the Palace Lights</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="container">
+    <form class="panel reveal" id="searchForm" style="display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:20px; align-items:end; box-shadow:var(--shadow);">
+      <div class="form-field" style="margin-bottom:0;">
+        <label for="checkin">Check-in</label>
+        <input type="date" id="checkin" name="checkin" required>
+      </div>
+      <div class="form-field" style="margin-bottom:0;">
+        <label for="checkout">Check-out</label>
+        <input type="date" id="checkout" name="checkout" required>
+      </div>
+      <div class="form-field" style="margin-bottom:0;">
+        <label for="guests">Guests</label>
+        <select id="guests" name="guests">
+          <option value="1">1 Guest</option>
+          <option value="2" selected>2 Guests</option>
+          <option value="3">3 Guests</option>
+          <option value="4">4+ Guests</option>
+        </select>
+      </div>
+      <button type="submit" class="btn gold" id="searchSubmitBtn"><span>Search Rooms</span></button>
+    </form>
+
+    <!-- Search feedback / status banner -->
+    <div id="searchResultBanner" class="mt-2" style="display:none; padding:14px 20px; background:rgba(201,162,39,.12); border:1px solid var(--gold); border-radius:8px; display:none; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+      <span id="searchResultText" style="font-weight:600; color:var(--ink);"></span>
+      <button type="button" class="btn small outline" id="clearSearchBtn" style="padding:4px 10px; font-size:.75rem;"><span>Show All Rooms</span></button>
+    </div>
+
+    <div class="mt-3 reveal">
+      <div class="chip-row" data-filter-target=".room-card">
+        <div class="chip active" data-filter="all">All Available Rooms</div>
+        <div class="chip" data-filter="Standard Single">Standard Single</div>
+        <div class="chip" data-filter="Standard Double">Standard Double</div>
+        <div class="chip" data-filter="Deluxe Double">Deluxe Double</div>
+        <div class="chip" data-filter="Executive Suite">Executive Suite</div>
+        <div class="chip" data-filter="Family Room">Family Room</div>
+        <div class="chip" data-filter="Presidential Suite">Presidential Suite</div>
+      </div>
+    </div>
+
+    <!-- Room Cards Grid with Ambient Light Interaction & Detailed Specs -->
+    <div class="grid cols-3 reveal-stagger mt-3" id="roomsGrid">
+
+      <!-- 1. Standard Single -->
+      <div class="card room-card illuminated-card" data-type="Standard Single" data-capacity="1" data-price="1">
+        <div class="art-panel" style="height:220px; position:relative; overflow:hidden;">
+          <img class="room-img" src="assets/images/rooms/standard-single.jpg" alt="Standard Single Room" loading="lazy">
+          <div class="dim-chamber-overlay">
+            <span class="dim-chamber-badge">✨ Chamber in Twilight · Pull Light Cord</span>
+          </div>
+          <span class="room-view-pill">Courtyard View</span>
+        </div>
+        <div class="body">
+          <span class="tag">Room 101 · Floor 1 · Heritage Wing</span>
+          <h3>Standard Single</h3>
+          <p class="muted short-desc">Sleeps 1 · Wi-Fi · Air Conditioning · Available</p>
+          
+          <!-- Detailed Room Amenities (Illuminated on Light ON) -->
+          <div class="room-detailed-amenities">
+            <div class="amenity-item">🛏️ Cozy Single Heritage Bed</div>
+            <div class="amenity-item">🚿 Marble Rain Shower En-suite</div>
+            <div class="amenity-item">📶 Ultra-Fast 500Mbps Wi-Fi</div>
+            <div class="amenity-item">☕ In-Room Tea &amp; Coffee Maker</div>
+            <div class="amenity-item">🍳 Royal Buffet Breakfast Included</div>
+            <div class="amenity-item">🤵 24/7 Palace Concierge Service</div>
+          </div>
+
+          <div class="flex justify-between items-center mt-1 pt-1" style="border-top:1px solid rgba(27,16,48,.08);">
+            <div>
+              <span class="price">₹1<small>/night</small></span>
+              <span class="tax-note">Taxes &amp; Fees Included</span>
+            </div>
+            <a class="btn small gold book-link" href="booking.html?room=Standard%20Single&price=1"><span>Book Suite</span></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Standard Double -->
+      <div class="card room-card illuminated-card" data-type="Standard Double" data-capacity="2" data-price="4499">
+        <div class="art-panel gold" style="height:220px; position:relative; overflow:hidden;">
+          <img class="room-img" src="assets/images/rooms/standard-double.jpg" alt="Standard Double Room" loading="lazy">
+          <div class="dim-chamber-overlay">
+            <span class="dim-chamber-badge">✨ Chamber in Twilight · Pull Light Cord</span>
+          </div>
+          <span class="room-view-pill">Garden Courtyard</span>
+        </div>
+        <div class="body">
+          <span class="tag">Room 204 · Floor 2 · Palace Wing</span>
+          <h3>Standard Double</h3>
+          <p class="muted short-desc">Sleeps 2 · Wi-Fi · Air Conditioning · Available</p>
+
+          <!-- Detailed Room Amenities (Illuminated on Light ON) -->
+          <div class="room-detailed-amenities">
+            <div class="amenity-item">🛏️ Plush Queen Heritage Bed</div>
+            <div class="amenity-item">🚿 Handcrafted Italian Marble Bath</div>
+            <div class="amenity-item">❄️ Climate-Controlled AC</div>
+            <div class="amenity-item">☕ In-Room Artisan Coffee Bar</div>
+            <div class="amenity-item">🍳 Daily Royal Buffet Breakfast</div>
+            <div class="amenity-item">🏊 Complimentary Palace Pool Access</div>
+          </div>
+
+          <div class="flex justify-between items-center mt-1 pt-1" style="border-top:1px solid rgba(27,16,48,.08);">
+            <div>
+              <span class="price">₹4,499<small>/night</small></span>
+              <span class="tax-note">Taxes &amp; Fees Included</span>
+            </div>
+            <a class="btn small gold book-link" href="booking.html?room=Standard%20Double&price=4499"><span>Book Suite</span></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Deluxe Double -->
+      <div class="card room-card illuminated-card" data-type="Deluxe Double" data-capacity="2" data-price="5999">
+        <div class="art-panel jali" style="height:220px; position:relative; overflow:hidden;">
+          <img class="room-img" src="assets/images/rooms/deluxe-double.jpg" alt="Deluxe Double Room" loading="lazy">
+          <div class="dim-chamber-overlay">
+            <span class="dim-chamber-badge">✨ Chamber in Twilight · Pull Light Cord</span>
+          </div>
+          <span class="room-view-pill">Balcony &amp; Fountains</span>
+        </div>
+        <div class="body">
+          <span class="tag">Room 120 · Floor 1 · Royal Terraces</span>
+          <h3>Deluxe Double</h3>
+          <p class="muted short-desc">Sleeps 2 · Balcony · Courtyard View · Available</p>
+
+          <!-- Detailed Room Amenities (Illuminated on Light ON) -->
+          <div class="room-detailed-amenities">
+            <div class="amenity-item">🛏️ Royal King Bed with Velvet Linens</div>
+            <div class="amenity-item">🌅 Private Jharokha Sunset Balcony</div>
+            <div class="amenity-item">🚿 Deep Soak Bathtub &amp; Rain Shower</div>
+            <div class="amenity-item">🍵 Organic Ayurvedic Herbal Infusions</div>
+            <div class="amenity-item">🍳 Chef's Gourmet Breakfast for Two</div>
+            <div class="amenity-item">🚗 Complimentary Valet &amp; Parking</div>
+          </div>
+
+          <div class="flex justify-between items-center mt-1 pt-1" style="border-top:1px solid rgba(27,16,48,.08);">
+            <div>
+              <span class="price">₹5,999<small>/night</small></span>
+              <span class="tax-note">Taxes &amp; Fees Included</span>
+            </div>
+            <a class="btn small gold book-link" href="booking.html?room=Deluxe%20Double&price=5999"><span>Book Suite</span></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Executive Suite -->
+      <div class="card room-card illuminated-card" data-type="Executive Suite" data-capacity="3" data-price="9999">
+        <div class="art-panel gold" style="height:220px; position:relative; overflow:hidden;">
+          <img class="room-img" src="assets/images/rooms/executive-suite.jpg" alt="Executive Suite" loading="lazy">
+          <div class="dim-chamber-overlay">
+            <span class="dim-chamber-badge">✨ Chamber in Twilight · Pull Light Cord</span>
+          </div>
+          <span class="room-view-pill">Panoramic Palace View</span>
+        </div>
+        <div class="body">
+          <span class="tag">Room 309 · Floor 3 · Maharaja Floor</span>
+          <h3>Executive Suite</h3>
+          <p class="muted short-desc">Sleeps 3 · Sitting Room · Wi-Fi · Available</p>
+
+          <!-- Detailed Room Amenities (Illuminated on Light ON) -->
+          <div class="room-detailed-amenities">
+            <div class="amenity-item">🛏️ Grand Emperor King Bed</div>
+            <div class="amenity-item">🛋️ Separate Royal Parlour &amp; Study</div>
+            <div class="amenity-item">🛁 Jacuzzi Spa Tub &amp; Dual Vanities</div>
+            <div class="amenity-item">☕ Premium Nespresso Coffee Machine</div>
+            <div class="amenity-item">🥂 Evening High Tea &amp; Canapés</div>
+            <div class="amenity-item">🤵 Dedicated Personal Concierge</div>
+          </div>
+
+          <div class="flex justify-between items-center mt-1 pt-1" style="border-top:1px solid rgba(27,16,48,.08);">
+            <div>
+              <span class="price">₹9,999<small>/night</small></span>
+              <span class="tax-note">Taxes &amp; Fees Included</span>
+            </div>
+            <a class="btn small gold book-link" href="booking.html?room=Executive%20Suite&price=9999"><span>Book Suite</span></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Family Room -->
+      <div class="card room-card illuminated-card" data-type="Family Room" data-capacity="4" data-price="7499">
+        <div class="art-panel" style="height:220px; position:relative; overflow:hidden;">
+          <img class="room-img" src="assets/images/rooms/family-room.jpg" alt="Family Room" loading="lazy">
+          <div class="dim-chamber-overlay">
+            <span class="dim-chamber-badge">✨ Chamber in Twilight · Pull Light Cord</span>
+          </div>
+          <span class="room-view-pill">Courtyard &amp; Pool View</span>
+        </div>
+        <div class="body">
+          <span class="tag">Room 311 · Floor 3 · Heritage Wing</span>
+          <h3>Family Room</h3>
+          <p class="muted short-desc">Sleeps 4 · Connected Beds · Wi-Fi · Available</p>
+
+          <!-- Detailed Room Amenities (Illuminated on Light ON) -->
+          <div class="room-detailed-amenities">
+            <div class="amenity-item">🛏️ 1 King Bed + 2 Twin Canopy Beds</div>
+            <div class="amenity-item">🚿 2 Separate Bathrooms with Marble Vanities</div>
+            <div class="amenity-item">🎮 Family Entertainment &amp; Board Games</div>
+            <div class="amenity-item">🍳 Full Family Buffet Breakfast Included</div>
+            <div class="amenity-item">🏊 Kid-Friendly Pool &amp; Courtyard Access</div>
+            <div class="amenity-item">🧺 Complimentary Laundry (1 Load/Stay)</div>
+          </div>
+
+          <div class="flex justify-between items-center mt-1 pt-1" style="border-top:1px solid rgba(27,16,48,.08);">
+            <div>
+              <span class="price">₹7,499<small>/night</small></span>
+              <span class="tax-note">Taxes &amp; Fees Included</span>
+            </div>
+            <a class="btn small gold book-link" href="booking.html?room=Family%20Room&price=7499"><span>Book Suite</span></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Presidential Suite -->
+      <div class="card room-card illuminated-card" data-type="Presidential Suite" data-capacity="4" data-price="18999">
+        <div class="art-panel jali" style="height:220px; position:relative; overflow:hidden;">
+          <img class="room-img" src="assets/images/rooms/presidential-suite.jpg" alt="Presidential Suite" loading="lazy">
+          <div class="dim-chamber-overlay">
+            <span class="dim-chamber-badge">✨ Chamber in Twilight · Pull Light Cord</span>
+          </div>
+          <span class="room-view-pill">360° Royal Palace Estate</span>
+        </div>
+        <div class="body">
+          <span class="tag">Room 118 · Floor 1 · Crown Residence</span>
+          <h3>Presidential Suite</h3>
+          <p class="muted short-desc">Sleeps 4 · Private Terrace · Butler · Available</p>
+
+          <!-- Detailed Room Amenities (Illuminated on Light ON) -->
+          <div class="room-detailed-amenities">
+            <div class="amenity-item">👑 2 Master Bedrooms with Handcrafted Teak Beds</div>
+            <div class="amenity-item">🏰 1,800 sq ft Private Rooftop Terrace &amp; Plunge Pool</div>
+            <div class="amenity-item">🤵 Dedicated 24-Hour Royal Butler Service</div>
+            <div class="amenity-item">🍷 Fully Stocked Complimentary Royal Bar</div>
+            <div class="amenity-item">🍽️ Private Dining Room &amp; Chef's Table Inclusions</div>
+            <div class="amenity-item">🚘 Complimentary Luxury Airport Chauffeur (Both Ways)</div>
+          </div>
+
+          <div class="flex justify-between items-center mt-1 pt-1" style="border-top:1px solid rgba(27,16,48,.08);">
+            <div>
+              <span class="price">₹18,999<small>/night</small></span>
+              <span class="tax-note">Taxes &amp; Fees Included</span>
+            </div>
+            <a class="btn small gold book-link" href="booking.html?room=Presidential%20Suite&price=18999"><span>Book Suite</span></a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- No rooms found message -->
+    <div id="noRoomsMessage" class="panel text-center mt-3" style="display:none; padding:40px 20px;">
+      <h3>No Rooms Matching Your Criteria</h3>
+      <p class="muted">Try adjusting your dates or guest count to view available rooms.</p>
+    </div>
+  </div>
+</section>
+
+<section class="bg-ink tight">
+  <div class="container text-center reveal">
+    <p class="eyebrow" style="justify-content:center; color:var(--gold-light);">Add To Your Stay</p>
+    <h2 style="color:var(--ivory);">Hotel Services</h2>
+    <div class="grid cols-4 mt-2" style="text-align:left;">
+      <div class="review-card"><span class="tag">Transport</span><h3>Airport Pickup</h3><p class="muted">₹1,499 per transfer</p></div>
+      <div class="review-card"><span class="tag">Wellness</span><h3>Spa Treatment</h3><p class="muted">₹2,999 per session</p></div>
+      <div class="review-card"><span class="tag">Housekeeping</span><h3>Laundry Service</h3><p class="muted">₹499 per load</p></div>
+      <div class="review-card"><span class="tag">Leisure</span><h3>City Tour Package</h3><p class="muted">₹2,499 per person</p></div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="foot-bottom" style="border-top:none; padding-top:0;">
+      <span>© 2026 Siddartha Palace. All rights reserved.</span>
+      <span class="flex gap-2"><a href="index.html" style="padding:0;">Home</a><a href="contact.html" style="padding:0;">Contact</a></span>
+    </div>
+  </div>
+</footer>
+
+<button class="floating-light-toggle" id="floatingLightToggle" aria-label="Toggle Palace Light Mode">
+  <span class="bulb-icon">💡</span>
+  <span id="floatingToggleText">Lights: OFF</span>
+</button>
+<button class="to-top" aria-label="Back to top">↑</button>
+<script src="assets/script.js"></script>
+<script>
+  // Setup default dates: Check-in Today, Checkout +3 Days
+  const today = new Date();
+  const defIn = today.toISOString().split('T')[0];
+  const threeDays = new Date(today);
+  threeDays.setDate(today.getDate() + 3);
+  const defOut = threeDays.toISOString().split('T')[0];
+
+  const inInput = document.getElementById('checkin');
+  const outInput = document.getElementById('checkout');
+  const guestsSelect = document.getElementById('guests');
+
+  inInput.value = defIn;
+  outInput.value = defOut;
+  inInput.min = defIn;
+  outInput.min = defIn;
+
+  inInput.addEventListener('change', () => {
+    outInput.min = inInput.value;
+    if (outInput.value <= inInput.value) {
+      const nextDay = new Date(inInput.value);
+      nextDay.setDate(nextDay.getDate() + 1);
+      outInput.value = nextDay.toISOString().split('T')[0];
+    }
+  });
+
+  // Read URL search params if present (e.g. from Home page search)
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('checkin')) inInput.value = urlParams.get('checkin');
+  if (urlParams.get('checkout')) outInput.value = urlParams.get('checkout');
+  if (urlParams.get('guests')) guestsSelect.value = urlParams.get('guests');
+
+  function performSearch() {
+    const inDate = inInput.value;
+    const outDate = outInput.value;
+    const guestVal = parseInt(guestsSelect.value) || 1;
+
+    let visibleCount = 0;
+    const cards = document.querySelectorAll('.room-card');
+
+    cards.forEach(card => {
+      const capacity = parseInt(card.getAttribute('data-capacity')) || 1;
+      const roomType = card.getAttribute('data-type');
+      const price = card.getAttribute('data-price');
+
+      // Filter: Room must have enough capacity for searched guests
+      if (capacity >= guestVal) {
+        card.style.display = '';
+        visibleCount++;
+
+        // Update book link with search dates and guests
+        const link = card.querySelector('.book-link');
+        if (link) {
+          link.href = `booking.html?room=${encodeURIComponent(roomType)}&price=${price}&checkin=${inDate}&checkout=${outDate}&guests=${guestVal}`;
+        }
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    const banner = document.getElementById('searchResultBanner');
+    const bannerText = document.getElementById('searchResultText');
+    const noRooms = document.getElementById('noRoomsMessage');
+
+    if (visibleCount > 0) {
+      banner.style.display = 'flex';
+      bannerText.innerHTML = `✓ <strong>${visibleCount} Available Room Category${visibleCount === 1 ? '' : 'ies'}</strong> found for <strong>${guestVal} Guest${guestVal === 1 ? '' : 's'}</strong> (${inDate} to ${outDate})`;
+      noRooms.style.display = 'none';
+    } else {
+      banner.style.display = 'none';
+      noRooms.style.display = 'block';
+    }
+  }
+
+  // Handle Search Form Submission
+  document.getElementById('searchForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    performSearch();
+  });
+
+  // Clear Search button
+  document.getElementById('clearSearchBtn').addEventListener('click', () => {
+    document.querySelectorAll('.room-card').forEach(c => c.style.display = '');
+    document.getElementById('searchResultBanner').style.display = 'none';
+    document.getElementById('noRoomsMessage').style.display = 'none';
+    document.querySelectorAll('.chip-row .chip').forEach(c => c.classList.remove('active'));
+    document.querySelector('.chip-row .chip[data-filter="all"]').classList.add('active');
+  });
+
+  // Auto-run search if parameters were passed
+  if (urlParams.get('checkin') || urlParams.get('guests')) {
+    performSearch();
+  }
+
+  /* =========================================================
+     PALACE CHANDELIER & EDISON BULB ILLUMINATION SYSTEM
+     ========================================================= */
+  let isPalaceLightsOn = false;
+
+  // Web Audio Synthesized Click & Royal Shimmer Tone
+  function playLightSwitchAudio(isOn) {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+      
+      // 1. Mechanical switch click
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(isOn ? 800 : 400, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.04);
+      gain.gain.setValueAtTime(0.35, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.05);
+
+      // 2. Royal harmonic chime on lights ON
+      if (isOn) {
+        setTimeout(() => {
+          const chimeOsc = ctx.createOscillator();
+          const chimeGain = ctx.createGain();
+          chimeOsc.type = 'sine';
+          chimeOsc.frequency.setValueAtTime(1174.66, ctx.currentTime); // D6 note
+          chimeGain.gain.setValueAtTime(0.18, ctx.currentTime);
+          chimeGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.9);
+          chimeOsc.connect(chimeGain);
+          chimeGain.connect(ctx.destination);
+          chimeOsc.start();
+          chimeOsc.stop(ctx.currentTime + 0.9);
+        }, 30);
+      }
+    } catch (e) {}
+  }
+
+  function togglePalaceLights(forceState) {
+    if (typeof forceState === 'boolean') {
+      isPalaceLightsOn = forceState;
+    } else {
+      isPalaceLightsOn = !isPalaceLightsOn;
+    }
+
+    const app = document.getElementById('palaceLightApp');
+    const showcase = document.getElementById('roomsShowcaseWrapper');
+    const pullChain = document.getElementById('pullChainWrap');
+    const promptTitle = document.getElementById('promptTitle');
+    const promptSubtitle = document.getElementById('promptSubtitle');
+    const quickBtnText = document.getElementById('quickLightBtnText');
+
+    // Chain pull animation
+    if (pullChain) {
+      pullChain.classList.add('pulling');
+      setTimeout(() => pullChain.classList.remove('pulling'), 450);
+    }
+
+    playLightSwitchAudio(isPalaceLightsOn);
+
+    if (isPalaceLightsOn) {
+      // LIGHTS ON — Full Palace Radiant Illumination
+      document.body.classList.add('palace-lights-on');
+      document.body.classList.remove('palace-lights-dark');
+      if (app) app.classList.add('lights-on');
+      if (showcase) showcase.classList.add('lights-on');
+
+      if (promptTitle) promptTitle.textContent = '☀️ Palace Chambers Illuminated!';
+      if (promptSubtitle) promptSubtitle.textContent = 'All room suites, luxury amenities, photography, and rates are now in crystal-clear view.';
+      if (quickBtnText) quickBtnText.textContent = '🌙 Dim Palace Lights';
+
+      const floatText = document.getElementById('floatingToggleText');
+      if (floatText) floatText.textContent = 'Lights: ON (Click to Dim)';
+    } else {
+      // LIGHTS OFF — Full Palace Deep Dark Chamber Mode
+      document.body.classList.remove('palace-lights-on');
+      document.body.classList.add('palace-lights-dark');
+      if (app) app.classList.remove('lights-on');
+      if (showcase) showcase.classList.remove('lights-on');
+
+      if (promptTitle) promptTitle.textContent = '🌙 Palace Chamber in the Dark';
+      if (promptSubtitle) promptSubtitle.textContent = 'Click the bulb or pull the golden cord to turn ON the lights & reveal all room details!';
+      if (quickBtnText) quickBtnText.textContent = '💡 Turn ON Lights';
+
+      const floatText = document.getElementById('floatingToggleText');
+      if (floatText) floatText.textContent = 'Lights: OFF (Turn ON)';
+    }
+  }
+
+  // Event Listeners
+  document.getElementById('edisonBulb')?.addEventListener('click', () => togglePalaceLights());
+  document.getElementById('pullChainWrap')?.addEventListener('click', () => togglePalaceLights());
+  document.getElementById('quickLightBtn')?.addEventListener('click', () => togglePalaceLights());
+  document.getElementById('blackoutTurnOnBtn')?.addEventListener('click', () => togglePalaceLights(true));
+  document.getElementById('floatingLightToggle')?.addEventListener('click', () => togglePalaceLights());
+
+  // Initialize in Total Dark Palace state when customer opens the page
+  document.body.classList.add('palace-lights-dark');
+  document.addEventListener('DOMContentLoaded', () => {
+    document.body.classList.add('palace-lights-dark');
+  });
+</script>
+</body>
+</html>

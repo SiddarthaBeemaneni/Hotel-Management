@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard — Siddartha Palace</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div class="page-loader"><svg class="loader-mark" viewBox="0 0 40 40" fill="none"><path d="M20 4C10 4 4 12 4 20s6 16 16 16 16-8 16-16S30 4 20 4Z" stroke="#C9A227" stroke-width="1.4" stroke-dasharray="6 6"/></svg></div>
+
+<div class="dash">
+  <aside class="dash-side">
+    <a href="index.html" class="brand" target="_blank" rel="noopener">
+      <svg class="crest" viewBox="0 0 40 40" fill="none"><path d="M20 3C11 3 6 10 6 18v16h6V19c0-7 3.5-11 8-11s8 4 8 11v15h6V18C34 10 29 3 20 3Z" stroke="#C9A227" stroke-width="1.6"/><circle cx="20" cy="16" r="2.4" fill="#C9A227"/></svg>
+      <span class="brand-text"><b>Siddartha Palace</b><em>Admin Console</em></span>
+    </a>
+    <nav class="dash-nav">
+      <a href="#" class="active" onclick="switchSection(event,'overview')">Overview</a>
+      <a href="#" onclick="switchSection(event,'customers')">Customers</a>
+      <a href="#" onclick="switchSection(event,'rooms')">Rooms</a>
+      <a href="#" onclick="switchSection(event,'bookings')">Bookings</a>
+      <a href="#" onclick="switchSection(event,'payments')">Payments</a>
+      <a href="#" onclick="switchSection(event,'sms')">SMS Reminders</a>
+      <a href="#" onclick="switchSection(event,'reports')">Reports</a>
+    </nav>
+    <div class="mt-3" style="border-top:1px solid rgba(247,240,224,.15); padding-top:20px;">
+      <a href="login.html" id="adminLogoutBtn" onclick="handleAdminLogout(event)" style="cursor:pointer; color:var(--gold-light); display:inline-flex; align-items:center; gap:8px; text-decoration:none; font-weight:500;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" stroke-width="1.8"/><polyline points="16 17 21 12 16 7" stroke="currentColor" stroke-width="1.8"/><line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="1.8"/></svg>
+        <span>Log Out</span>
+      </a>
+    </div>
+  </aside>
+
+  <main class="dash-main">
+    <div class="flex justify-between items-center" style="flex-wrap:wrap; gap:16px;">
+      <div>
+        <p class="eyebrow" id="adminRoleEyebrow" style="margin-bottom:6px;">Super Admin Console</p>
+        <h2 id="adminGreetingHeading" style="margin-bottom:0;">Welcome, Siddartha Beemaneni</h2>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="notif-wrap">
+          <button class="btn icon-only outline" aria-label="Notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3a5 5 0 00-5 5v3l-2 4h14l-2-4V8a5 5 0 00-5-5z" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M9.5 20a2.5 2.5 0 005 0" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>
+            <span class="notif-dot"></span>
+          </button>
+          <div class="notif-panel">
+            <div class="notif-item"><b>18 payments pending</b><span>Monthly SMS run scheduled for the 1st</span></div>
+            <div class="notif-item"><b>New booking</b><span>SP482913 — Deluxe Double</span></div>
+            <div class="notif-item"><b>Room maintenance</b><span>Room 208 marked Occupied</span></div>
+          </div>
+        </div>
+        <button class="btn gold small" data-action="Add Room" data-heading="Room Added" data-message="A new room has been added to the inventory and is now visible to guests." data-icon="check"><span>+ Add Room</span></button>
+      </div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <section id="sec-overview" class="dash-section mt-3">
+      <div class="grid cols-4">
+        <!-- KPI 1: TOTAL INCOME -->
+        <div class="kpi interactive-kpi" onclick="openKpiModal('income')" style="cursor:pointer; position:relative; transition:all .2s ease;" title="Click to view full income & payments breakdown">
+          <div class="lbl flex justify-between items-center">
+            <span>Total Income</span>
+            <span style="font-size:.7rem; color:var(--gold); font-weight:600;">🔍 View Details</span>
+          </div>
+          <div class="num" id="adminKpiIncome">₹0</div>
+          <div class="delta up" id="adminKpiIncomeSub">From verified bookings</div>
+        </div>
+
+        <!-- KPI 2: TOTAL BOOKED ROOMS -->
+        <div class="kpi interactive-kpi" onclick="openKpiModal('bookings')" style="cursor:pointer; position:relative; transition:all .2s ease;" title="Click to see which rooms are booked and who booked them">
+          <div class="lbl flex justify-between items-center">
+            <span>Total Booked Rooms</span>
+            <span style="font-size:.7rem; color:var(--gold); font-weight:600;">🔍 View Details</span>
+          </div>
+          <div class="num" id="adminKpiBookings">0</div>
+          <div class="delta up" id="adminKpiBookingsSub">0 active stays</div>
+        </div>
+
+        <!-- KPI 3: LOGGED-IN CUSTOMERS -->
+        <div class="kpi interactive-kpi" onclick="openKpiModal('customers')" style="cursor:pointer; position:relative; transition:all .2s ease;" title="Click to view all registered and logged-in customers">
+          <div class="lbl flex justify-between items-center">
+            <span>Logged-in Customers</span>
+            <span style="font-size:.7rem; color:var(--gold); font-weight:600;">🔍 View Details</span>
+          </div>
+          <div class="num" id="adminKpiCustomers">0</div>
+          <div class="delta up" id="adminKpiCustomersSub">Registered users</div>
+        </div>
+
+        <!-- KPI 4: ROOM OCCUPANCY -->
+        <div class="kpi interactive-kpi" onclick="openKpiModal('occupancy')" style="cursor:pointer; position:relative; transition:all .2s ease;" title="Click to view room-by-room occupancy breakdown">
+          <div class="lbl flex justify-between items-center">
+            <span>Room Occupancy</span>
+            <span style="font-size:.7rem; color:var(--gold); font-weight:600;">🔍 View Details</span>
+          </div>
+          <div class="num" id="adminKpiOccupancy">0%</div>
+          <div class="delta up" id="adminKpiOccupancySub">18 Total Rooms</div>
+        </div>
+      </div>
+
+      <div class="panel mt-3">
+        <div class="flex justify-between items-center" style="flex-wrap:wrap; gap:10px;">
+          <h3 style="margin:0;">Recent Customer Reservations</h3>
+          <a href="rooms.html" class="btn small gold" style="padding:6px 14px;"><span>+ Book Room</span></a>
+        </div>
+        <div class="divider-arch" style="margin:14px 0 20px;"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Booking ID</th><th>Guest Name</th><th>Room</th><th>Dates</th><th>Total (INR)</th><th>Status</th></tr></thead>
+            <tbody id="overviewRecentBookingsTbody">
+              <tr><td colspan="6" class="text-center muted" style="padding:20px;">Loading recent customer bookings…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- CUSTOMERS -->
+    <section id="sec-customers" class="dash-section mt-3" style="display:none;">
+      <div class="flex justify-between items-center mt-1" style="flex-wrap:wrap; gap:14px;">
+        <input type="search" id="custSearchInput" placeholder="Search customers by name, email or phone…" style="max-width:340px; padding:10px 16px; border:1px solid rgba(27,16,48,.18); border-radius:6px;">
+        <span class="muted" id="custTotalCountText" style="font-weight:600;">0 Customers Registered</span>
+      </div>
+      <div class="table-wrap mt-2">
+        <table>
+          <thead><tr><th>Customer Name</th><th>Email Address</th><th>Phone Number</th><th>Login Method</th><th>Rooms Booked</th><th>Loyalty Tier</th><th>Actions</th></tr></thead>
+          <tbody id="adminCustomersTbody">
+            <tr><td colspan="7" class="text-center muted" style="padding:24px;">Loading registered customers…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ROOMS -->
+    <section id="sec-rooms" class="dash-section mt-3" style="display:none;">
+      <div class="flex justify-between items-center mt-1" style="flex-wrap:wrap; gap:10px;">
+        <h3 style="margin:0;">Palace Rooms Inventory (18 Total Rooms)</h3>
+        <span class="badge ok" id="adminVacantBadge">18 Vacant</span>
+      </div>
+      <div class="table-wrap mt-2">
+        <table>
+          <thead><tr><th>Room No</th><th>Room Type</th><th>Floor</th><th>Rate/Night (INR)</th><th>Current Status</th><th>Actions</th></tr></thead>
+          <tbody id="adminRoomsTbody">
+            <!-- Populated dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- BOOKINGS -->
+    <section id="sec-bookings" class="dash-section mt-3" style="display:none;">
+      <div class="flex justify-between items-center mt-1" style="flex-wrap:wrap; gap:10px;">
+        <h3 style="margin:0;">All Customer Bookings</h3>
+        <span class="muted" id="bookingsTotalCountText">0 Total Bookings</span>
+      </div>
+      <div class="table-wrap mt-2">
+        <table>
+          <thead><tr><th>Booking Ref</th><th>Customer Name</th><th>Room Allocated</th><th>Check-in → Out</th><th>Nights</th><th>Total (INR)</th><th>Payment</th><th>Status</th></tr></thead>
+          <tbody id="adminBookingsTbody">
+            <tr><td colspan="8" class="text-center muted" style="padding:24px;">Loading customer bookings…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PAYMENTS -->
+    <section id="sec-payments" class="dash-section mt-3" style="display:none;">
+      <div class="table-wrap mt-1">
+        <table>
+          <thead><tr><th>Payment ID</th><th>Booking Ref</th><th>Guest Name</th><th>Amount (INR)</th><th>Method</th><th>Status</th></tr></thead>
+          <tbody id="adminPaymentsTbody">
+            <tr><td colspan="6" class="text-center muted" style="padding:24px;">Loading payments ledger…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SMS -->
+    <section id="sec-sms" class="dash-section mt-3" style="display:none;">
+      <div class="grid cols-2" style="align-items:flex-start;">
+        <div class="panel">
+          <h3>Monthly SMS Reminder</h3>
+          <div class="divider-arch" style="margin:14px 0 20px;"></div>
+          <p class="muted">Automatically checks customers with pending hotel fees at the start of each month and sends an SMS reminder via Twilio / Fast2SMS.</p>
+          <div class="form-field mt-2">
+            <label>Message Template</label>
+            <textarea rows="4">Dear Customer, this is a reminder from Siddartha Palace. Your hotel fee is due. Kindly make the payment at your earliest convenience. Thank you.</textarea>
+          </div>
+          <div class="flex gap-1 mt-1" style="flex-wrap:wrap;">
+            <button class="btn gold" data-action="Send Manual Reminder"><span>Send Now</span></button>
+            <button class="btn outline" data-action="Schedule Reminder" data-heading="Reminder Scheduled" data-message="The automated reminder schedule has been saved." data-icon="check"><span>Save Schedule</span></button>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>SMS Dispatch History</h3>
+          <div class="divider-arch" style="margin:14px 0 20px;"></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Recipient</th><th>Date Sent</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Siddartha Beemaneni</td><td>Aug 28, 2026</td><td><span class="badge ok">Delivered</span></td></tr>
+                <tr><td>Priya Nair</td><td>Aug 28, 2026</td><td><span class="badge ok">Delivered</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KPI DRILL-DOWN DETAIL MODAL -->
+    <div id="kpiModal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(27,16,48,.65); backdrop-filter:blur(4px); z-index:9999; justify-content:center; align-items:center; padding:20px;">
+      <div class="panel" style="background:#FAF7F2; border:1px solid #E3D9C6; border-radius:14px; max-width:920px; width:100%; max-height:88vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 50px rgba(27,16,48,.3); padding:0;">
+        
+        <!-- Modal Header -->
+        <div style="background:#1B1030; padding:20px 24px; border-bottom:3px solid var(--gold); display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <h3 id="kpiModalTitle" style="color:var(--gold); margin:0; font-size:1.3rem; letter-spacing:1px; font-family:Georgia,serif;">
+              Detail Breakdown
+            </h3>
+            <p id="kpiModalSubtitle" style="color:#FAF7F2; margin:4px 0 0; font-size:.85rem; opacity:.85;">
+              Real-time database records
+            </p>
+          </div>
+          <button onclick="closeKpiModal()" style="background:transparent; border:none; color:#FAF7F2; font-size:1.8rem; cursor:pointer; line-height:1; padding:4px 10px; border-radius:6px;" title="Close modal">&times;</button>
+        </div>
+
+        <!-- Modal Search & Count Summary Bar -->
+        <div style="padding:16px 24px; background:#FFFFFF; border-bottom:1px solid #EAE2D2; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <input type="search" id="kpiModalSearchInput" placeholder="Filter records…" style="padding:8px 14px; border:1px solid rgba(27,16,48,.2); border-radius:6px; font-size:.9rem; min-width:280px;">
+          <span id="kpiModalSummaryCount" style="font-weight:600; color:var(--maroon); font-size:.9rem;">0 Records</span>
+        </div>
+
+        <!-- Modal Table Body (Scrollable) -->
+        <div style="padding:20px 24px; overflow-y:auto; flex:1;">
+          <div class="table-wrap">
+            <table style="width:100%; font-size:.9rem;">
+              <thead id="kpiModalThead">
+                <!-- Injected dynamically -->
+              </thead>
+              <tbody id="kpiModalTbody">
+                <!-- Injected dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div style="background:#ECE4D4; padding:14px 24px; border-top:1px solid #D8CCB5; display:flex; justify-content:space-between; align-items:center;">
+          <small class="muted">Live Database Records · Siddartha Palace Management</small>
+          <div class="flex gap-1">
+            <button class="btn small outline" onclick="window.print()"><span>Print / Save</span></button>
+            <button class="btn small gold" onclick="closeKpiModal()"><span>Close</span></button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<style>
+  .interactive-kpi {
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid rgba(201, 162, 39, 0.18);
+  }
+  .interactive-kpi:hover {
+    transform: translateY(-4px);
+    border-color: var(--gold) !important;
+    box-shadow: 0 14px 30px rgba(27, 16, 48, 0.14), 0 4px 12px rgba(201, 162, 39, 0.25) !important;
+    background: #FFFFFF !important;
+  }
+</style>
+
+<script src="assets/script.js"></script>
+<script>
+  const API_BASE = '/api';
+
+  function initAdminIdentity() {
+    const adminStr = localStorage.getItem('sp_admin') || localStorage.getItem('sp_user');
+    let adminName = 'Siddartha Beemaneni';
+    let adminEmail = 'siddarthabeemaneni@gmail.com';
+    let adminRole = 'Super Admin';
+
+    if (adminStr) {
+      try {
+        const parsed = JSON.parse(adminStr);
+        if (parsed.full_name && parsed.full_name !== 'Ananya Sharma' && parsed.full_name !== 'Ananya') {
+          adminName = parsed.full_name;
+        }
+        if (parsed.email) adminEmail = parsed.email;
+        if (parsed.access_role) adminRole = parsed.access_role;
+      } catch (e) {}
+    }
+
+    const hr = new Date().getHours();
+    let timeGreeting = 'Good Morning';
+    if (hr >= 12 && hr < 17) timeGreeting = 'Good Afternoon';
+    else if (hr >= 17) timeGreeting = 'Good Evening';
+
+    const heading = document.getElementById('adminGreetingHeading');
+    const eyebrow = document.getElementById('adminRoleEyebrow');
+    if (heading) heading.textContent = `${timeGreeting}, ${adminName}`;
+    if (eyebrow && adminEmail) eyebrow.textContent = `${adminRole} · ${adminEmail}`;
+  }
+
+  function handleAdminLogout(e) {
+    if (e) e.preventDefault();
+    localStorage.removeItem('sp_user');
+    localStorage.removeItem('sp_admin');
+    localStorage.removeItem('sp_token');
+    window.location.href = 'login.html';
+  }
+
+  function switchSection(e, name) {
+    e.preventDefault();
+    document.querySelectorAll('.dash-nav a').forEach(a => a.classList.remove('active'));
+    e.target.classList.add('active');
+    document.querySelectorAll('.dash-section').forEach(s => s.style.display = 'none');
+    const sec = document.getElementById('sec-' + name);
+    if (sec) sec.style.display = 'block';
+    
+    if (name === 'sms') loadReminderLog();
+    if (name === 'customers' || name === 'bookings' || name === 'overview') loadAdminData();
+  }
+
+  let allAdminCustomers = [];
+  let allAdminBookings = [];
+
+  const ALL_ROOMS = [
+    { room: '101', type: 'Standard Single', floor: 1, rate: 1 },
+    { room: '102', type: 'Standard Single', floor: 1, rate: 1 },
+    { room: '103', type: 'Standard Double', floor: 1, rate: 4499 },
+    { room: '104', type: 'Standard Double', floor: 1, rate: 4499 },
+    { room: '105', type: 'Deluxe Double', floor: 1, rate: 5999 },
+    { room: '118', type: 'Presidential Suite', floor: 1, rate: 18999 },
+    { room: '201', type: 'Standard Single', floor: 2, rate: 1 },
+    { room: '202', type: 'Standard Double', floor: 2, rate: 4499 },
+    { room: '208', type: 'Presidential Suite', floor: 2, rate: 18999 },
+    { room: '210', type: 'Executive Suite', floor: 2, rate: 9999 },
+    { room: '301', type: 'Deluxe Double', floor: 3, rate: 5999 },
+    { room: '302', type: 'Deluxe Double', floor: 3, rate: 5999 },
+    { room: '309', type: 'Executive Suite', floor: 3, rate: 9999 },
+    { room: '311', type: 'Family Room', floor: 3, rate: 7499 },
+    { room: '312', type: 'Family Room', floor: 3, rate: 7499 },
+    { room: '401', type: 'Deluxe Double', floor: 4, rate: 5999 },
+    { room: '404', type: 'Family Room', floor: 4, rate: 7499 },
+    { room: '405', type: 'Executive Suite', floor: 4, rate: 9999 }
+  ];
+
+  async function loadAdminData() {
+    try {
+      const custResp = await fetch(`${API_BASE}/auth/customers`);
+      const custData = await custResp.json();
+      if (custData.success && Array.isArray(custData.data)) {
+        allAdminCustomers = custData.data;
+      }
+    } catch (cErr) {
+      console.warn('Customers load fallback:', cErr);
+    }
+
+    try {
+      const bookResp = await fetch(`${API_BASE}/bookings`);
+      const bookData = await bookResp.json();
+      if (bookData.success && Array.isArray(bookData.data)) {
+        allAdminBookings = bookData.data;
+      }
+    } catch (bErr) {
+      console.warn('Bookings load fallback:', bErr);
+    }
+
+    renderAdminDashboard();
+  }
+
+  function renderAdminDashboard() {
+    const custCount = allAdminCustomers.length;
+    const bookingsCount = allAdminBookings.length;
+    
+    let totalRevenue = 0;
+    allAdminBookings.forEach(b => {
+      totalRevenue += parseFloat(b.total_amount || 0);
+    });
+
+    const occupiedRoomSet = new Set(allAdminBookings.filter(b => b.booking_status !== 'cancelled').map(b => String(b.room_number)));
+    const occupiedCount = occupiedRoomSet.size;
+    const occupancyPercent = Math.min(100, Math.round((occupiedCount / ALL_ROOMS.length) * 100));
+
+    document.getElementById('adminKpiIncome').textContent = '₹' + totalRevenue.toLocaleString('en-IN');
+    document.getElementById('adminKpiBookings').textContent = bookingsCount;
+    document.getElementById('adminKpiBookingsSub').textContent = `${occupiedCount} room${occupiedCount === 1 ? '' : 's'} occupied`;
+    document.getElementById('adminKpiCustomers').textContent = custCount;
+    document.getElementById('adminKpiCustomersSub').textContent = `${custCount} registered user${custCount === 1 ? '' : 's'}`;
+    document.getElementById('adminKpiOccupancy').textContent = occupancyPercent + '%';
+    document.getElementById('adminKpiOccupancySub').textContent = `${ALL_ROOMS.length - occupiedCount} Available of ${ALL_ROOMS.length}`;
+    document.getElementById('custTotalCountText').textContent = `${custCount} Customer${custCount === 1 ? '' : 's'} Registered`;
+    document.getElementById('bookingsTotalCountText').textContent = `${bookingsCount} Total Booking${bookingsCount === 1 ? '' : 's'}`;
+    document.getElementById('adminVacantBadge').textContent = `${ALL_ROOMS.length - occupiedCount} Vacant Rooms`;
+
+    // Render Customers Table
+    const custTbody = document.getElementById('adminCustomersTbody');
+    if (allAdminCustomers.length === 0) {
+      custTbody.innerHTML = `<tr><td colspan="7" class="text-center muted" style="padding:24px;">No customer accounts registered yet.</td></tr>`;
+    } else {
+      custTbody.innerHTML = allAdminCustomers.map((c, i) => {
+        const userBookings = allAdminBookings.filter(b => b.customer_email?.toLowerCase() === c.email?.toLowerCase());
+        const bCount = userBookings.length;
+        const totalSpent = userBookings.reduce((sum, b) => sum + parseFloat(b.total_amount || 0), 0);
+        const providerBadge = c.auth_provider === 'google'
+          ? `<span class="badge" style="background:#e8f0fe; color:#1a73e8; border:1px solid #c2e7ff;">Google Sign-In</span>`
+          : `<span class="badge" style="background:rgba(201,162,39,.12); color:var(--maroon); border:1px solid var(--gold);">Email / Password</span>`;
+
+        return `
+          <tr>
+            <td><strong>${c.full_name || 'Guest'}</strong></td>
+            <td>${c.email || '—'}</td>
+            <td>${c.phone_number || '—'}</td>
+            <td>${providerBadge}</td>
+            <td><strong>${bCount}</strong> Room${bCount === 1 ? '' : 's'}</td>
+            <td><span class="badge info">${c.loyalty_tier || 'Bronze'}</span></td>
+            <td>
+              <button class="btn small outline" onclick="openCustomerBookingsModal('${c.email}')"><span>View Bookings</span></button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Render Bookings Table & Overview Table
+    const bookTbody = document.getElementById('adminBookingsTbody');
+    const overviewTbody = document.getElementById('overviewRecentBookingsTbody');
+    
+    if (allAdminBookings.length === 0) {
+      bookTbody.innerHTML = `<tr><td colspan="8" class="text-center muted" style="padding:24px;">No customer bookings recorded yet.</td></tr>`;
+      overviewTbody.innerHTML = `<tr><td colspan="6" class="text-center muted" style="padding:24px;">No customer reservations yet.</td></tr>`;
+    } else {
+      const rowsHtml = allAdminBookings.map(b => {
+        const floor = b.floor || (b.room_number ? b.room_number.charAt(0) : '1');
+        const statusBadge = b.booking_status === 'cancelled'
+          ? `<span class="badge bad">Cancelled</span>`
+          : `<span class="badge ok">✓ Confirmed</span>`;
+
+        return `
+          <tr>
+            <td><strong style="color:var(--maroon);">#${b.booking_code}</strong></td>
+            <td>${b.customer_name || 'Guest'}</td>
+            <td><strong>${b.room_type}</strong><br><small class="muted">Room ${b.room_number || '101'} · Fl ${floor}</small></td>
+            <td>${b.check_in_date} → ${b.check_out_date}</td>
+            <td>${b.nights || 1}N</td>
+            <td><strong>₹${Number(b.total_amount || 0).toLocaleString('en-IN')}</strong></td>
+            <td><small class="muted">${b.payment_method || 'UPI'}</small></td>
+            <td>${statusBadge}</td>
+          </tr>
+        `;
+      }).join('');
+
+      bookTbody.innerHTML = rowsHtml;
+      overviewTbody.innerHTML = rowsHtml;
+    }
+
+    // Render Payments Table
+    const payTbody = document.getElementById('adminPaymentsTbody');
+    if (allAdminBookings.length === 0) {
+      payTbody.innerHTML = `<tr><td colspan="6" class="text-center muted" style="padding:24px;">No payment transactions recorded.</td></tr>`;
+    } else {
+      payTbody.innerHTML = allAdminBookings.map((b, i) => `
+        <tr>
+          <td><span style="font-family:monospace;">PAY-${1000 + i}</span></td>
+          <td><strong>#${b.booking_code}</strong></td>
+          <td>${b.customer_name}</td>
+          <td><strong>₹${Number(b.total_amount || 0).toLocaleString('en-IN')}</strong></td>
+          <td>${b.payment_method || 'PhonePe UPI'}</td>
+          <td><span class="badge ok">Completed</span></td>
+        </tr>
+      `).join('');
+    }
+
+    // Render Rooms Table
+    const roomsTbody = document.getElementById('adminRoomsTbody');
+    roomsTbody.innerHTML = ALL_ROOMS.map(r => {
+      const booking = allAdminBookings.find(b => String(b.room_number) === r.room && b.booking_status !== 'cancelled');
+      const isOccupied = !!booking;
+      const statusBadge = isOccupied
+        ? `<span class="badge warn" style="background:#fff3cd; color:#856404; border:1px solid #ffeeba;">Occupied (${booking.customer_name})</span>`
+        : `<span class="badge ok">Available</span>`;
+
+      return `
+        <tr>
+          <td><strong>Room ${r.room}</strong></td>
+          <td>${r.type}</td>
+          <td>Floor ${r.floor}</td>
+          <td>₹${Number(r.rate).toLocaleString('en-IN')}</td>
+          <td>${statusBadge}</td>
+          <td>
+            <button class="btn small outline" onclick="alert('Room ${r.room} (${r.type})\\nFloor: ${r.floor}\\nRate: ₹${r.rate}/night\\nStatus: ${isOccupied ? 'Occupied by ' + booking.customer_name + ' (' + booking.check_in_date + ' to ' + booking.check_out_date + ')' : 'Available for booking'}')"><span>View</span></button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  /* =========================================================
+     KPI MODAL DRILL-DOWN HANDLER
+     Shows exactly which room is booked, who booked it, revenue breakdown, etc.
+     ========================================================= */
+  function openKpiModal(type) {
+    const modal = document.getElementById('kpiModal');
+    const titleEl = document.getElementById('kpiModalTitle');
+    const subtitleEl = document.getElementById('kpiModalSubtitle');
+    const theadEl = document.getElementById('kpiModalThead');
+    const tbodyEl = document.getElementById('kpiModalTbody');
+    const countEl = document.getElementById('kpiModalSummaryCount');
+    const searchInput = document.getElementById('kpiModalSearchInput');
+
+    searchInput.value = '';
+    modal.style.display = 'flex';
+
+    if (type === 'bookings') {
+      titleEl.innerHTML = '🛏️ Booked Rooms &amp; Guest Allocations';
+      subtitleEl.textContent = 'Detailed roster of which room is booked, who booked it, dates and payment';
+      theadEl.innerHTML = `
+        <tr>
+          <th>Allocated Room</th>
+          <th>Room Category</th>
+          <th>Booked By (Guest)</th>
+          <th>Contact Info</th>
+          <th>Stay Dates &amp; Nights</th>
+          <th>Total Paid</th>
+          <th>Booking Ref</th>
+          <th>Status</th>
+        </tr>
+      `;
+
+      if (allAdminBookings.length === 0) {
+        tbodyEl.innerHTML = `<tr><td colspan="8" class="text-center muted" style="padding:28px;">No rooms have been booked yet.</td></tr>`;
+        countEl.textContent = '0 Booked Rooms';
+      } else {
+        countEl.textContent = `${allAdminBookings.length} Room Booking${allAdminBookings.length === 1 ? '' : 's'}`;
+        tbodyEl.innerHTML = allAdminBookings.map(b => {
+          const floor = b.floor || (b.room_number ? b.room_number.charAt(0) : '1');
+          return `
+            <tr>
+              <td><strong style="color:var(--maroon); font-size:1rem;">🚪 Room ${b.room_number || '101'}</strong><br><small class="muted">Floor ${floor}</small></td>
+              <td><strong>${b.room_type}</strong></td>
+              <td><strong style="color:#1B1030;">${b.customer_name || 'Guest'}</strong></td>
+              <td>
+                <small>${b.customer_email || '—'}</small><br>
+                <small class="muted">📞 ${b.phone_number || '—'}</small>
+              </td>
+              <td>
+                <strong>${b.check_in_date} → ${b.check_out_date}</strong><br>
+                <small class="muted">${b.nights || 1} Night(s) · ${b.guests_count || 1} Guest(s)</small>
+              </td>
+              <td><strong style="color:#2E7D32; font-size:1rem;">₹${Number(b.total_amount || 0).toLocaleString('en-IN')}</strong><br><small class="muted">${b.payment_method || 'UPI'}</small></td>
+              <td><span style="font-family:monospace; font-weight:bold; color:var(--maroon);">#${b.booking_code}</span></td>
+              <td><span class="badge ok">✓ Confirmed</span></td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+    } else if (type === 'income') {
+      titleEl.innerHTML = '💰 Total Income &amp; Payments Breakdown';
+      subtitleEl.textContent = 'Complete ledger of all customer payments and transactions';
+      theadEl.innerHTML = `
+        <tr>
+          <th>Payment ID</th>
+          <th>Booking Ref</th>
+          <th>Customer Name</th>
+          <th>Amount Paid</th>
+          <th>Payment Method</th>
+          <th>Payment Date</th>
+          <th>Status</th>
+        </tr>
+      `;
+
+      let totalRevenue = 0;
+      allAdminBookings.forEach(b => totalRevenue += parseFloat(b.total_amount || 0));
+      countEl.textContent = `Total Collected: ₹${totalRevenue.toLocaleString('en-IN')}`;
+
+      if (allAdminBookings.length === 0) {
+        tbodyEl.innerHTML = `<tr><td colspan="7" class="text-center muted" style="padding:28px;">No income recorded yet.</td></tr>`;
+      } else {
+        tbodyEl.innerHTML = allAdminBookings.map((b, i) => `
+          <tr>
+            <td><strong style="font-family:monospace;">PAY-${1001 + i}</strong></td>
+            <td><strong style="color:var(--maroon);">#${b.booking_code}</strong></td>
+            <td><strong>${b.customer_name}</strong><br><small class="muted">${b.customer_email}</small></td>
+            <td><strong style="color:#2E7D32; font-size:1.05rem;">₹${Number(b.total_amount || 0).toLocaleString('en-IN')}</strong></td>
+            <td><span class="badge" style="background:#E8F0FE; color:#1A73E8; border:1px solid #C2E7FF;">${b.payment_method || 'PhonePe UPI'}</span></td>
+            <td>${new Date(b.created_at || Date.now()).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })}</td>
+            <td><span class="badge ok">Completed</span></td>
+          </tr>
+        `).join('');
+      }
+
+    } else if (type === 'customers') {
+      titleEl.innerHTML = '👥 Logged-in &amp; Registered Customer Directory';
+      subtitleEl.textContent = 'All authenticated guest profiles with contact info and booking history';
+      theadEl.innerHTML = `
+        <tr>
+          <th>Customer Name</th>
+          <th>Email Address</th>
+          <th>Mobile Phone</th>
+          <th>Sign-In Provider</th>
+          <th>Rooms Booked</th>
+          <th>Total Spent</th>
+          <th>Loyalty Tier</th>
+        </tr>
+      `;
+
+      countEl.textContent = `${allAdminCustomers.length} Customer${allAdminCustomers.length === 1 ? '' : 's'} Registered`;
+
+      if (allAdminCustomers.length === 0) {
+        tbodyEl.innerHTML = `<tr><td colspan="7" class="text-center muted" style="padding:28px;">No customer accounts registered yet.</td></tr>`;
+      } else {
+        tbodyEl.innerHTML = allAdminCustomers.map(c => {
+          const userBookings = allAdminBookings.filter(b => b.customer_email?.toLowerCase() === c.email?.toLowerCase());
+          const bCount = userBookings.length;
+          const totalSpent = userBookings.reduce((sum, b) => sum + parseFloat(b.total_amount || 0), 0);
+          const providerBadge = c.auth_provider === 'google'
+            ? `<span class="badge" style="background:#e8f0fe; color:#1a73e8; border:1px solid #c2e7ff;">Google Sign-In</span>`
+            : `<span class="badge" style="background:rgba(201,162,39,.12); color:var(--maroon); border:1px solid var(--gold);">Email / Password</span>`;
+
+          return `
+            <tr>
+              <td><strong style="font-size:1rem; color:#1B1030;">${c.full_name || 'Guest'}</strong></td>
+              <td>${c.email || '—'}</td>
+              <td>📞 ${c.phone_number || '—'}</td>
+              <td>${providerBadge}</td>
+              <td><strong style="color:var(--maroon);">${bCount}</strong> Room${bCount === 1 ? '' : 's'}</td>
+              <td><strong>₹${totalSpent.toLocaleString('en-IN')}</strong></td>
+              <td><span class="badge info">${c.loyalty_tier || 'Bronze'}</span></td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+    } else if (type === 'occupancy') {
+      titleEl.innerHTML = '🚪 Palace Room Inventory &amp; Occupancy Breakdown';
+      subtitleEl.textContent = 'Room-by-room availability and occupant tracking across all 18 palace rooms';
+      theadEl.innerHTML = `
+        <tr>
+          <th>Room Number</th>
+          <th>Room Type</th>
+          <th>Floor</th>
+          <th>Nightly Rate</th>
+          <th>Status</th>
+          <th>Occupant Details</th>
+        </tr>
+      `;
+
+      const occupiedRooms = allAdminBookings.filter(b => b.booking_status !== 'cancelled');
+      countEl.textContent = `${occupiedRooms.length} Occupied · ${ALL_ROOMS.length - occupiedRooms.length} Vacant`;
+
+      tbodyEl.innerHTML = ALL_ROOMS.map(r => {
+        const booking = allAdminBookings.find(b => String(b.room_number) === r.room && b.booking_status !== 'cancelled');
+        const isOccupied = !!booking;
+
+        return `
+          <tr>
+            <td><strong style="font-size:1rem; color:${isOccupied ? 'var(--maroon)' : '#1B1030'};">Room ${r.room}</strong></td>
+            <td><strong>${r.type}</strong></td>
+            <td>Floor ${r.floor}</td>
+            <td>₹${Number(r.rate).toLocaleString('en-IN')}</td>
+            <td>
+              ${isOccupied 
+                ? `<span class="badge warn" style="background:#FFF3CD; color:#856404; border:1px solid #FFEEBA;">Occupied</span>`
+                : `<span class="badge ok">Available</span>`}
+            </td>
+            <td>
+              ${isOccupied 
+                ? `<strong>${booking.customer_name}</strong> · <small class="muted">${booking.check_in_date} to ${booking.check_out_date} (#${booking.booking_code})</small>`
+                : `<span class="muted">Ready for check-in</span>`}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+  }
+
+  function closeKpiModal() {
+    document.getElementById('kpiModal').style.display = 'none';
+  }
+
+  function openCustomerBookingsModal(email) {
+    const custBookings = allAdminBookings.filter(b => b.customer_email?.toLowerCase() === email.toLowerCase());
+    openKpiModal('bookings');
+    document.getElementById('kpiModalSearchInput').value = email;
+    const rows = document.querySelectorAll('#kpiModalTbody tr');
+    rows.forEach(r => {
+      const text = r.textContent.toLowerCase();
+      r.style.display = text.includes(email.toLowerCase()) ? '' : 'none';
+    });
+  }
+
+  // Live filter inside KPI modal
+  document.getElementById('kpiModalSearchInput')?.addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase().trim();
+    const rows = document.querySelectorAll('#kpiModalTbody tr');
+    rows.forEach(r => {
+      const text = r.textContent.toLowerCase();
+      r.style.display = text.includes(q) ? '' : 'none';
+    });
+  });
+
+  // Customer search filter
+  document.getElementById('custSearchInput')?.addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase().trim();
+    const rows = document.querySelectorAll('#adminCustomersTbody tr');
+    rows.forEach(r => {
+      const text = r.textContent.toLowerCase();
+      r.style.display = text.includes(q) ? '' : 'none';
+    });
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initAdminIdentity();
+    loadAdminData();
+  });
+  initAdminIdentity();
+  loadAdminData();
+</script>
+</body>
+</html>

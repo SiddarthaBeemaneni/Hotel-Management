@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Siddartha Palace — A Heritage of Hospitality</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Siddartha Palace — luxury heritage hotel. Book rooms, explore amenities, and manage your stay online.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<div class="page-loader"><svg class="loader-mark" viewBox="0 0 40 40" fill="none"><path d="M20 4C10 4 4 12 4 20s6 16 16 16 16-8 16-16S30 4 20 4Z" stroke="#C9A227" stroke-width="1.4" stroke-dasharray="6 6"/></svg></div>
+<div class="scroll-progress"></div>
+
+<!-- ===== HEADER ===== -->
+<header class="site-header">
+  <div class="nav-wrap">
+    <a href="index.html" class="brand">
+      <svg class="crest" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 3C11 3 6 10 6 18v16h6V19c0-7 3.5-11 8-11s8 4 8 11v15h6V18C34 10 29 3 20 3Z" stroke="#C9A227" stroke-width="1.6"/>
+        <circle cx="20" cy="16" r="2.4" fill="#C9A227"/>
+      </svg>
+      <span class="brand-text"><b>Siddartha Palace</b><em>Est. Heritage &amp; Grace</em></span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html" class="active">Home</a>
+      <a href="rooms.html">Rooms &amp; Suites</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="about.html">About</a>
+      <a href="faq.html">FAQ</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="login.html" class="btn outline small" target="_blank" rel="noopener"><span>Login</span></a>
+      <a href="rooms.html" class="btn gold small"><span>Book Now</span></a>
+    </div>
+    <button class="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <!-- Celestial Sky Elements: Glowing Palace Moon & Flocks of Birds -->
+  <div class="hero-sky-elements" aria-hidden="true">
+    <!-- Glowing Luminous Moon -->
+    <div class="palace-moon" title="Siddartha Palace Full Moon">
+      <div class="moon-body">
+        <div class="moon-crater c1"></div>
+        <div class="moon-crater c2"></div>
+        <div class="moon-crater c3"></div>
+      </div>
+      <div class="moon-glow"></div>
+      <div class="moon-aura"></div>
+    </div>
+
+    <!-- Animated Flying Birds across Twilight Sky -->
+    <div class="birds-container">
+      <div class="bird bird-1"><div class="bird-wing left"></div><div class="bird-wing right"></div></div>
+      <div class="bird bird-2"><div class="bird-wing left"></div><div class="bird-wing right"></div></div>
+      <div class="bird bird-3"><div class="bird-wing left"></div><div class="bird-wing right"></div></div>
+      <div class="bird bird-4"><div class="bird-wing left"></div><div class="bird-wing right"></div></div>
+      <div class="bird bird-5"><div class="bird-wing left"></div><div class="bird-wing right"></div></div>
+      <div class="bird bird-6"><div class="bird-wing left"></div><div class="bird-wing right"></div></div>
+    </div>
+  </div>
+
+  <div class="hero-inner">
+    <p class="eyebrow hero-fade-up" style="color:var(--gold-light); font-size:.78rem; letter-spacing:.2em; text-transform:uppercase;">👑 Siddartha Palace · Since 1932</p>
+    <h1 class="hero-fade-up d1">A palace of <span class="accent">quiet grandeur</span>,<br>reserved for you.</h1>
+    <p class="lede hero-fade-up d2">Experience royal living, serene jasmine courtyards, and handcrafted heritage luxury in the heart of the city.</p>
+    <div class="hero-cta hero-fade-up d3">
+      <a href="rooms.html" class="btn gold"><span>Check Availability</span></a>
+      <a href="gallery.html" class="btn outline-light"><span>Explore the Palace</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HERO SEARCH BAR ===== -->
+<div class="container" style="margin-top:-38px; position:relative; z-index:20;">
+  <form action="rooms.html" method="GET" class="panel reveal home-search-panel" style="display:grid; grid-template-columns:1.2fr 1.2fr 1fr auto; gap:16px; align-items:end; background:#fff; padding:22px 28px; border-radius:12px; box-shadow:0 18px 45px rgba(27,16,48,.14); border:1.5px solid rgba(201,162,39,.35);">
+    <div class="form-field" style="margin-bottom:0;">
+      <label for="hCheckin" style="font-weight:600; font-size:.78rem; letter-spacing:.08em; text-transform:uppercase; color:var(--text-soft);">Check-in</label>
+      <input type="date" id="hCheckin" name="checkin" required style="padding:10px 14px;">
+    </div>
+    <div class="form-field" style="margin-bottom:0;">
+      <label for="hCheckout" style="font-weight:600; font-size:.78rem; letter-spacing:.08em; text-transform:uppercase; color:var(--text-soft);">Check-out</label>
+      <input type="date" id="hCheckout" name="checkout" required style="padding:10px 14px;">
+    </div>
+    <div class="form-field" style="margin-bottom:0;">
+      <label for="hGuests" style="font-weight:600; font-size:.78rem; letter-spacing:.08em; text-transform:uppercase; color:var(--text-soft);">Guests</label>
+      <select id="hGuests" name="guests" style="padding:10px 14px;">
+        <option value="1">1 Guest</option>
+        <option value="2" selected>2 Guests</option>
+        <option value="3">3 Guests</option>
+        <option value="4">4+ Guests</option>
+      </select>
+    </div>
+    <button type="submit" class="btn gold" style="padding:12px 28px;"><span>Search</span></button>
+  </form>
+</div>
+
+<script>
+  // Set default dates on home search bar
+  (function() {
+    const d = new Date();
+    const cin = document.getElementById('hCheckin');
+    const cout = document.getElementById('hCheckout');
+    if (cin && cout) {
+      cin.value = d.toISOString().split('T')[0];
+      cin.min = cin.value;
+      const d3 = new Date(d);
+      d3.setDate(d.getDate() + 3);
+      cout.value = d3.toISOString().split('T')[0];
+      cout.min = cin.value;
+      cin.addEventListener('change', () => {
+        cout.min = cin.value;
+        if (cout.value <= cin.value) {
+          const next = new Date(cin.value);
+          next.setDate(next.getDate() + 1);
+          cout.value = next.toISOString().split('T')[0];
+        }
+      });
+    }
+  })();
+</script>
+
+<!-- ===== INTRO ===== -->
+<section class="bg-ivory">
+  <div class="container">
+    <div class="grid cols-2" style="align-items:center; gap:60px;">
+      <div class="reveal">
+        <p class="eyebrow">The Palace</p>
+        <h2>Where heritage architecture meets modern rest</h2>
+        <p>Once the residence of the Siddartha royal family, the palace has been restored stone by stone into a hotel that honours its past. Hand-painted ceilings, jharokha balconies, and courtyard fountains sit alongside quiet, contemporary interiors designed for a genuine night's rest.</p>
+        <p>Every stay is looked after by a dedicated concierge team, from the moment you book online to the moment you check out.</p>
+        <a href="about.html" class="btn outline mt-1"><span>Our Story</span></a>
+      </div>
+      <div class="art-panel jali arch-frame reveal" style="height:420px;">
+        <svg class="motif" viewBox="0 0 200 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M100 10C50 10 20 55 20 100v150h30V105c0-45 22-70 50-70s50 25 50 70v155h30V100c0-45-30-90-80-90Z" stroke="#E7C766" stroke-width="1.5" opacity="0.85"/>
+          <circle cx="100" cy="70" r="14" stroke="#E7C766" stroke-width="1.5"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ROOM CATEGORIES ===== -->
+<section class="bg-ivory" style="padding-top:0;">
+  <div class="container">
+    <div class="section-head center reveal">
+      <p class="eyebrow">Stay With Us</p>
+      <h2>Rooms &amp; Suites</h2>
+      <p>Six room categories, each with its own character — from a quiet Standard Single to the Presidential Suite overlooking the inner courtyard.</p>
+    </div>
+    <div class="grid cols-3 reveal-stagger">
+
+      <div class="card">
+        <div class="art-panel" style="height:200px;"><img class="room-img" src="assets/images/rooms/standard-single.jpg" alt="Standard Single Room" loading="lazy"></div>
+        <div class="body">
+          <span class="tag">Sleeps 1</span>
+          <h3>Standard Single</h3>
+          <p>A calm, well-appointed room for the solo traveller.</p>
+          <div class="flex justify-between items-center mt-1">
+            <span class="price">₹1<small>/night</small></span>
+            <a href="rooms.html" class="btn small outline"><span>View</span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="art-panel gold" style="height:200px;"><img class="room-img" src="assets/images/rooms/deluxe-double.jpg" alt="Deluxe Double Room" loading="lazy"></div>
+        <div class="body">
+          <span class="tag">Sleeps 2</span>
+          <h3>Deluxe Double</h3>
+          <p>Warm tones, a private balcony, and courtyard views.</p>
+          <div class="flex justify-between items-center mt-1">
+            <span class="price">₹5,999<small>/night</small></span>
+            <a href="rooms.html" class="btn small outline"><span>View</span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="art-panel jali" style="height:200px;"><img class="room-img" src="assets/images/rooms/executive-suite.jpg" alt="Executive Suite" loading="lazy"></div>
+        <div class="body">
+          <span class="tag">Sleeps 3</span>
+          <h3>Executive Suite</h3>
+          <p>A separate sitting room, ideal for extended stays.</p>
+          <div class="flex justify-between items-center mt-1">
+            <span class="price">₹9,999<small>/night</small></span>
+            <a href="rooms.html" class="btn small outline"><span>View</span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="art-panel" style="height:200px;"><img class="room-img" src="assets/images/rooms/family-room.jpg" alt="Family Room" loading="lazy"></div>
+        <div class="body">
+          <span class="tag">Sleeps 4</span>
+          <h3>Family Room</h3>
+          <p>Connected sleeping areas built for family travel.</p>
+          <div class="flex justify-between items-center mt-1">
+            <span class="price">₹7,499<small>/night</small></span>
+            <a href="rooms.html" class="btn small outline"><span>View</span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="art-panel gold" style="height:200px;"><img class="room-img" src="assets/images/rooms/standard-double.jpg" alt="Standard Double Room" loading="lazy"></div>
+        <div class="body">
+          <span class="tag">Sleeps 2</span>
+          <h3>Standard Double</h3>
+          <p>Comfortable and unfussy, close to the courtyard garden.</p>
+          <div class="flex justify-between items-center mt-1">
+            <span class="price">₹4,499<small>/night</small></span>
+            <a href="rooms.html" class="btn small outline"><span>View</span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="art-panel jali" style="height:200px;"><img class="room-img" src="assets/images/rooms/presidential-suite.jpg" alt="Presidential Suite" loading="lazy"></div>
+        <div class="body">
+          <span class="tag">Sleeps 4</span>
+          <h3>Presidential Suite</h3>
+          <p>The palace's finest — private terrace and butler service.</p>
+          <div class="flex justify-between items-center mt-1">
+            <span class="price">₹18,999<small>/night</small></span>
+            <a href="rooms.html" class="btn small outline"><span>View</span></a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== AMENITIES ===== -->
+<section class="bg-ink">
+  <div class="container">
+    <div class="grid cols-2" style="gap:60px; align-items:flex-start;">
+      <div class="reveal">
+        <p class="eyebrow" style="color:var(--gold-light)">Amenities</p>
+        <h2>Everything the palace offers</h2>
+        <p>A stay here comes with more than a room — enjoy the amenities below, or add services during booking.</p>
+        <a href="rooms.html" class="btn gold mt-1"><span>Reserve a Room</span></a>
+      </div>
+      <div class="reveal-stagger" style="color:var(--ivory)">
+        <div class="amenity">
+          <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M4 10a8 8 0 1116 0v8H4v-8Z" stroke="#C9A227" stroke-width="1.4"/><path d="M9 18v-4a3 3 0 016 0v4" stroke="#C9A227" stroke-width="1.4"/></svg>
+          <div><h3 style="color:var(--ivory); font-size:1.1rem;">Spa &amp; Wellness</h3><p>A full-service Ayurvedic spa, sauna, and heated indoor pool.</p></div>
+        </div>
+        <div class="amenity">
+          <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M3 12h18M3 12a3 3 0 013-3h12a3 3 0 013 3M5 12v6M19 12v6" stroke="#C9A227" stroke-width="1.4"/></svg>
+          <div><h3 style="color:var(--ivory); font-size:1.1rem;">Fine Dining</h3><p>Two royal restaurants and an all-day courtyard café.</p></div>
+        </div>
+        <div class="amenity">
+          <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M4 8h16M4 8l2 10h12l2-10" stroke="#C9A227" stroke-width="1.4"/></svg>
+          <div><h3 style="color:var(--ivory); font-size:1.1rem;">Airport Pickup</h3><p>Complimentary luxury transfers for suite guests.</p></div>
+        </div>
+        <div class="amenity">
+          <svg class="ico" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="#C9A227" stroke-width="1.4"/><path d="M8 2v4M16 2v4" stroke="#C9A227" stroke-width="1.4"/></svg>
+          <div><h3 style="color:var(--ivory); font-size:1.1rem;">Event Halls</h3><p>Courtyard weddings and a conference room for business.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== GALLERY PREVIEW ===== -->
+<section class="bg-ivory">
+  <div class="container">
+    <div class="section-head center reveal">
+      <p class="eyebrow">A Glimpse Inside</p>
+      <h2>Palace Gallery</h2>
+    </div>
+    <div class="grid cols-4 reveal-stagger">
+      <div class="art-panel arch-frame" style="height:220px; position:relative; overflow:hidden; border-radius:8px;">
+        <img src="assets/images/courtyard.jpg" alt="Courtyard Fountain" style="width:100%; height:100%; object-fit:cover;">
+      </div>
+      <div class="art-panel arch-frame" style="height:220px; position:relative; overflow:hidden; border-radius:8px;">
+        <img src="assets/images/dining.jpg" alt="Royal Dining Hall" style="width:100%; height:100%; object-fit:cover;">
+      </div>
+      <div class="art-panel arch-frame" style="height:220px; position:relative; overflow:hidden; border-radius:8px;">
+        <img src="assets/images/spa.jpg" alt="Ayurvedic Wellness Spa" style="width:100%; height:100%; object-fit:cover;">
+      </div>
+      <div class="art-panel arch-frame" style="height:220px; position:relative; overflow:hidden; border-radius:8px;">
+        <img src="assets/images/palace-facade.jpg" alt="Palace Facade at Twilight" style="width:100%; height:100%; object-fit:cover;">
+      </div>
+    </div>
+    <div class="text-center mt-3">
+      <a href="gallery.html" class="btn outline"><span>View Full Gallery</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== REVIEWS ===== -->
+<section class="bg-ink">
+  <div class="container">
+    <div class="section-head center reveal" style="color:var(--ivory)">
+      <p class="eyebrow" style="color:var(--gold-light)">Guest Reviews</p>
+      <h2>Kind words from our guests</h2>
+    </div>
+    <div class="grid cols-3 reveal-stagger">
+      <div class="review-card">
+        <div class="stars">★★★★★</div>
+        <p>"Great stay, friendly staff and clean rooms. The courtyard breakfast was the highlight of our trip."</p>
+        <div class="reviewer"><div class="avatar">A</div><div><b>Aarav Mehta</b><span>Executive Suite · Verified Stay</span></div></div>
+      </div>
+      <div class="review-card">
+        <div class="stars">★★★★★</div>
+        <p>"Excellent service, will definitely come back! The spa treatment after a long journey was exactly what we needed."</p>
+        <div class="reviewer"><div class="avatar">P</div><div><b>Priya Nair</b><span>Deluxe Double · Verified Stay</span></div></div>
+      </div>
+      <div class="review-card">
+        <div class="stars">★★★★☆</div>
+        <p>"The staff went above and beyond to help us plan an anniversary evening in the courtyard. Small touches, remembered well."</p>
+        <div class="reviewer"><div class="avatar">R</div><div><b>Rohan Kapoor</b><span>Presidential Suite · Verified Stay</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CONTACT STRIP ===== -->
+<section class="bg-ivory">
+  <div class="container">
+    <div class="panel reveal" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:24px;">
+      <div>
+        <p class="eyebrow">Plan Your Stay</p>
+        <h2 style="margin-bottom:0;">Reserve your room at Siddartha Palace</h2>
+      </div>
+      <div class="flex gap-2" style="flex-wrap:wrap;">
+        <a href="contact.html" class="btn outline"><span>Contact Us</span></a>
+        <a href="rooms.html" class="btn gold"><span>Book Now</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="foot-grid">
+      <div>
+        <a href="index.html" class="brand" style="margin-bottom:16px;">
+          <svg class="crest" viewBox="0 0 40 40" fill="none"><path d="M20 3C11 3 6 10 6 18v16h6V19c0-7 3.5-11 8-11s8 4 8 11v15h6V18C34 10 29 3 20 3Z" stroke="#C9A227" stroke-width="1.6"/><circle cx="20" cy="16" r="2.4" fill="#C9A227"/></svg>
+          <span class="brand-text"><b style="color:var(--ivory)">Siddartha Palace</b><em>Est. Heritage &amp; Grace</em></span>
+        </a>
+        <p class="muted" style="max-width:280px;">A heritage palace hotel dedicated to quiet, attentive hospitality — online booking, secure payments, and a dashboard for every stay.</p>
+        <div class="social-row">
+          <a href="contact.html" target="_blank" rel="noopener" aria-label="Facebook">f</a>
+          <a href="contact.html" target="_blank" rel="noopener" aria-label="Instagram">◎</a>
+          <a href="contact.html" target="_blank" rel="noopener" aria-label="X">𝕏</a>
+        </div>
+      </div>
+      <div>
+        <h4>Explore</h4>
+        <a href="rooms.html">Rooms &amp; Suites</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="about.html">About Us</a>
+        <a href="faq.html">FAQ</a>
+      </div>
+      <div>
+        <h4>Guest Access</h4>
+        <a href="login.html" target="_blank" rel="noopener">Customer Login</a>
+        <a href="login.html" target="_blank" rel="noopener">Admin Login</a>
+        <a href="customer-dashboard.html" target="_blank" rel="noopener">My Dashboard</a>
+        <a href="policies.html">Hotel Policies</a>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <a href="tel:+911141234567">+91 11 4123 4567</a>
+        <a href="mailto:reservations@siddarthapalace.com">reservations@siddarthapalace.com</a>
+        <a href="contact.html">Chandni Chowk, Jaipur, Rajasthan</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Siddartha Palace. All rights reserved.</span>
+      <span class="flex gap-2"><a href="policies.html" style="padding:0;">Privacy Policy</a><a href="policies.html" style="padding:0;">Terms &amp; Conditions</a></span>
+    </div>
+  </div>
+</footer>
+
+<button class="to-top" aria-label="Back to top">↑</button>
+<script src="assets/script.js"></script>
+</body>
+</html>
