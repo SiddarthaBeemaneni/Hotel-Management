@@ -357,10 +357,10 @@ img,svg{display:block; max-width:100%;}
 /* Luminous Palace Moon */
 .palace-moon {
   position: absolute;
-  top: 1.2%;
-  right: 12%;
-  width: 76px;
-  height: 76px;
+  top: 14px;
+  right: 11%;
+  width: 74px;
+  height: 74px;
   border-radius: 50%;
   z-index: 2;
 }
@@ -409,10 +409,10 @@ img,svg{display:block; max-width:100%;}
 
 @media (max-width: 768px) {
   .palace-moon {
-    top: 10px;
-    right: 8%;
-    width: 54px;
-    height: 54px;
+    top: 8px;
+    right: 6%;
+    width: 52px;
+    height: 52px;
   }
 }
 
