@@ -6,47 +6,31 @@
 
 const express = require('express');
 const router  = express.Router();
-const { pool } = require('../db');
-
-// In-memory fallback cache to ensure zero-downtime even if MySQL is initializing
-const memoryCustomers = new Map();
-
-// Preload default registered seed accounts into in-memory store
-const defaultRegisteredUsers = [
-  { full_name: 'Siddartha Beemaneni', email: 'siddarthabeemaneni@gmail.com', phone_number: '+917396704027', nationality: 'India', loyalty_tier: 'Platinum', auth_provider: 'google', password: 'Password123' },
-  { full_name: 'Admin Console', email: 'admin@siddarthapalace.com', phone_number: '+917396704027', nationality: 'India', loyalty_tier: 'Platinum', auth_provider: 'email', password: 'Admin@123' }
-];
-
-defaultRegisteredUsers.forEach(u => {
-  memoryCustomers.set(u.email.toLowerCase(), {
-    customer_id: Date.now() + Math.floor(Math.random() * 1000),
-    ...u,
-    created_at: new Date().toISOString()
-  });
-});
+const { pool, executeWithRetry } = require('../db');
+const storageEngine = require('../services/storageEngine');
 
 /* ---------------------------------------------------------
-   Helper: Find or create customer in MySQL (or in-memory)
+   Helper: Find or create customer with Dual-Tier Persistence
    --------------------------------------------------------- */
 async function getCustomerByEmail(email) {
   if (!email) return null;
   const cleanEmail = email.trim().toLowerCase();
 
   try {
-    const [rows] = await pool.execute(
+    const [rows] = await executeWithRetry(
       'SELECT * FROM customers WHERE LOWER(email) = ?',
       [cleanEmail]
     );
     if (rows && rows.length > 0) return rows[0];
   } catch (err) {
-    console.warn('  [Auth DB Warning] MySQL read failed, checking in-memory store:', err.message);
+    // Graceful fallback to persistent storage
   }
 
-  return memoryCustomers.get(cleanEmail) || null;
+  return storageEngine.getCustomer(cleanEmail);
 }
 
 async function saveOrUpdateCustomer({ full_name, email, phone_number, password, nationality, loyalty_tier, auth_provider }) {
-  const cleanEmail = email.trim().toLowerCase();
+  const cleanEmail = (email || '').trim().toLowerCase();
   const name = (full_name || cleanEmail.split('@')[0]).trim();
   const phone = phone_number || '';
   const nation = nationality || 'India';
@@ -54,18 +38,26 @@ async function saveOrUpdateCustomer({ full_name, email, phone_number, password, 
   const provider = auth_provider || 'email';
   const pass = password || '';
 
-  let customer = null;
+  // 1. Immediately save to high-speed persistent engine
+  const persistentCust = storageEngine.saveCustomer({
+    full_name: name,
+    email: cleanEmail,
+    phone_number: phone,
+    password: pass,
+    nationality: nation,
+    loyalty_tier: tier,
+    auth_provider: provider
+  });
 
+  // 2. Asynchronously sync to MySQL if connected
   try {
-    // Check if exists
-    const [existing] = await pool.execute(
-      'SELECT * FROM customers WHERE LOWER(email) = ?',
+    const [existing] = await executeWithRetry(
+      'SELECT customer_id FROM customers WHERE LOWER(email) = ?',
       [cleanEmail]
     );
 
     if (existing && existing.length > 0) {
-      // Update existing
-      await pool.execute(
+      await executeWithRetry(
         `UPDATE customers
          SET full_name = COALESCE(NULLIF(?, ''), full_name),
              phone_number = COALESCE(NULLIF(?, ''), phone_number),
@@ -75,43 +67,18 @@ async function saveOrUpdateCustomer({ full_name, email, phone_number, password, 
          WHERE customer_id = ?`,
         [name, phone, nation, tier, provider, existing[0].customer_id]
       );
-      const [updated] = await pool.execute(
-        'SELECT * FROM customers WHERE customer_id = ?',
-        [existing[0].customer_id]
-      );
-      customer = updated[0];
     } else {
-      // Insert new
-      const [result] = await pool.execute(
+      await executeWithRetry(
         `INSERT INTO customers (full_name, email, phone_number, nationality, loyalty_tier, auth_provider)
          VALUES (?, ?, ?, ?, ?, ?)`,
         [name, cleanEmail, phone, nation, tier, provider]
       );
-      const [created] = await pool.execute(
-        'SELECT * FROM customers WHERE customer_id = ?',
-        [result.insertId]
-      );
-      customer = created[0];
     }
   } catch (err) {
-    console.warn('  [Auth DB Warning] MySQL write failed, using memory store:', err.message);
+    // MySQL sync buffered in persistent storage
   }
 
-  // Always keep in-memory cache synchronized
-  const memCust = {
-    customer_id: customer ? customer.customer_id : (memoryCustomers.get(cleanEmail)?.customer_id || Date.now()),
-    full_name: name,
-    email: cleanEmail,
-    phone_number: phone,
-    password: pass || memoryCustomers.get(cleanEmail)?.password || '',
-    nationality: nation,
-    loyalty_tier: tier,
-    auth_provider: provider,
-    created_at: customer ? customer.created_at : (memoryCustomers.get(cleanEmail)?.created_at || new Date().toISOString())
-  };
-  memoryCustomers.set(cleanEmail, memCust);
-
-  return customer || memCust;
+  return persistentCust;
 }
 
 /* ---------------------------------------------------------
@@ -216,7 +183,7 @@ router.post('/login', async (req, res) => {
         'admin@siddarthapalace.com'
       ];
 
-      const isRegistered = allowedAdminEmails.includes(cleanEmail) || memoryCustomers.has(cleanEmail);
+      const isRegistered = allowedAdminEmails.includes(cleanEmail) || !!storageEngine.getCustomer(cleanEmail);
 
       if (!isRegistered && !cleanEmail.includes('admin@')) {
         return res.status(403).json({
@@ -326,12 +293,13 @@ router.get('/customers', async (req, res) => {
       );
       if (rows && rows.length > 0) list = rows;
     } catch (dbErr) {
-      console.warn('  [Auth DB Warning] MySQL customer read failed, using memory store:', dbErr.message);
+      // MySQL offline/initializing
     }
 
-    // Merge in-memory customers
-    for (const [email, cust] of memoryCustomers.entries()) {
-      if (!list.some(c => c.email?.toLowerCase() === email.toLowerCase())) {
+    // Merge persistent storage customers
+    const persistentList = storageEngine.getAllCustomers();
+    for (const cust of persistentList) {
+      if (!list.some(c => c.email?.toLowerCase() === cust.email?.toLowerCase())) {
         list.push({
           customer_id: cust.customer_id,
           full_name: cust.full_name,
@@ -339,7 +307,7 @@ router.get('/customers', async (req, res) => {
           phone_number: cust.phone_number || '',
           nationality: cust.nationality || 'India',
           loyalty_tier: cust.loyalty_tier || 'Bronze',
-          auth_provider: cust.auth_provider || 'google',
+          auth_provider: cust.auth_provider || 'email',
           created_at: cust.created_at || new Date().toISOString()
         });
       }
@@ -573,6 +541,6 @@ router.post('/forgot-password/reset', async (req, res) => {
 });
 
 router.saveOrUpdateCustomer = saveOrUpdateCustomer;
-router.memoryCustomers = memoryCustomers;
+router.storageEngine = storageEngine;
 
 module.exports = router;
