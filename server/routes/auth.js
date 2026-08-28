@@ -13,9 +13,7 @@ const memoryCustomers = new Map();
 
 // Preload default registered seed accounts into in-memory store
 const defaultRegisteredUsers = [
-  { full_name: 'Siddartha Beemaneni', email: 'siddarthabeemaneni@gmail.com', phone_number: '+917396704027', nationality: 'India', loyalty_tier: 'Gold', auth_provider: 'google', password: 'Password123' },
-  { full_name: 'Priya Nair', email: 'priya.nair@siddarthapalace.com', phone_number: '+919811122203', nationality: 'India', loyalty_tier: 'Bronze', auth_provider: 'email', password: 'Password123' },
-  { full_name: 'Aditi Rao', email: 'aditi.rao@gmail.com', phone_number: '+919820011223', nationality: 'India', loyalty_tier: 'Silver', auth_provider: 'email', password: 'Password123' },
+  { full_name: 'Siddartha Beemaneni', email: 'siddarthabeemaneni@gmail.com', phone_number: '+917396704027', nationality: 'India', loyalty_tier: 'Platinum', auth_provider: 'google', password: 'Password123' },
   { full_name: 'Admin Console', email: 'admin@siddarthapalace.com', phone_number: '+917396704027', nationality: 'India', loyalty_tier: 'Platinum', auth_provider: 'email', password: 'Admin@123' }
 ];
 
@@ -215,9 +213,7 @@ router.post('/login', async (req, res) => {
     if (role === 'admin' || cleanEmail.includes('admin@')) {
       const allowedAdminEmails = [
         'siddarthabeemaneni@gmail.com',
-        'admin@siddarthapalace.com',
-        'ananya.sharma@siddarthapalace.com',
-        'vikram.rathore@siddarthapalace.com'
+        'admin@siddarthapalace.com'
       ];
 
       const isRegistered = allowedAdminEmails.includes(cleanEmail) || memoryCustomers.has(cleanEmail);
@@ -575,5 +571,8 @@ router.post('/forgot-password/reset', async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
+router.saveOrUpdateCustomer = saveOrUpdateCustomer;
+router.memoryCustomers = memoryCustomers;
 
 module.exports = router;

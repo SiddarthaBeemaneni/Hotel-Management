@@ -7,6 +7,7 @@
 const express = require('express');
 const router  = express.Router();
 const { pool } = require('../db');
+const authRouter = require('./auth');
 
 // In-memory bookings cache to support instant responsiveness & offline fallback
 const memoryBookings = [];
@@ -103,21 +104,35 @@ router.post('/', async (req, res) => {
     let assignedRoomNumber = room_number || null;
 
     try {
-      // 1. Ensure customer exists in MySQL
-      const [custRows] = await pool.execute(
-        'SELECT customer_id FROM customers WHERE LOWER(email) = ?',
-        [cleanEmail]
-      );
+      // 1. Ensure customer exists and is updated in MySQL & Memory
+      let savedCust = null;
+      if (authRouter.saveOrUpdateCustomer) {
+        savedCust = await authRouter.saveOrUpdateCustomer({
+          full_name: guestName,
+          email: cleanEmail,
+          phone_number: phone_number || '',
+          loyalty_tier: 'Bronze',
+          auth_provider: 'email'
+        });
+      }
 
-      if (custRows.length > 0) {
-        customerId = custRows[0].customer_id;
+      if (savedCust) {
+        customerId = savedCust.customer_id;
       } else {
-        const [newCust] = await pool.execute(
-          `INSERT INTO customers (full_name, email, phone_number, nationality, loyalty_tier)
-           VALUES (?, ?, ?, 'India', 'Bronze')`,
-          [guestName, cleanEmail, phone_number || '']
+        const [custRows] = await pool.execute(
+          'SELECT customer_id FROM customers WHERE LOWER(email) = ?',
+          [cleanEmail]
         );
-        customerId = newCust.insertId;
+        if (custRows.length > 0) {
+          customerId = custRows[0].customer_id;
+        } else {
+          const [newCust] = await pool.execute(
+            `INSERT INTO customers (full_name, email, phone_number, nationality, loyalty_tier)
+             VALUES (?, ?, ?, 'India', 'Bronze')`,
+            [guestName, cleanEmail, phone_number || '']
+          );
+          customerId = newCust.insertId;
+        }
       }
 
       // 2. Find a vacant room matching room_type if available
